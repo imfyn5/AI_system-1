@@ -1,2 +1,9 @@
 # AI_system
-11146071
+
+## 安裝專案
+
+```python
+python manage.py createsuperuser
+python manage.py migrate  
+python manage.py runserver
+```
