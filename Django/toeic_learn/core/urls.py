@@ -21,5 +21,9 @@ from toeic import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.index, name="index"),
+    path("Login/", views.user, name="user"),
+    path("Login/Register/", views.register, name="register"),
+    path("", views.home, name="home"),
 ]
+
+
