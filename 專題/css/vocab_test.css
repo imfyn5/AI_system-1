@@ -74,49 +74,6 @@ h2 {
     margin: 0 0 10px;
 }
 
-.locked {
-background: #ccc; /* 灰色背景，表示鎖定 */
-cursor: not-allowed;
-position: relative;
-}
-
-.locked h2,
-.locked p {
-    opacity: 0.5; /* 讓文字變淡，顯示鎖定狀態 */
-}
-
-/* 付費解鎖按鈕 */
-.unlock-btn {
-    background-color: red;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.unlock-btn:hover {
-    background-color: darkred;
-}
-
-/* 免費測驗按鈕 */
-.free-test {
-    background-color: #4CAF50; /* 綠色 */
-    color: white;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-    border: none;
-}
-
-.free-test:hover {
-    background-color: #388E3C; /* 深綠色 */
-}
-
 .test-box {
     width: 100%;              /* 使容器佔滿父元素的寬度 */
     padding: 20px;           /* 內邊距 */
@@ -147,7 +104,7 @@ position: relative;
     box-shadow:0 4px 4px rgba(0, 0, 0, 0.2);
 }
 .category-box span {
-    background: #007BFF;
+    background: #86bdf7;
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
