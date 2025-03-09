@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\Fyn\Desktop\專題\分支\AI_system-1\Django\env
+set VIRTUAL_ENV=C:\Users\cd620\OneDrive\桌面\114專題\114_system\Django\toeic_learn\env
 
 if not defined PROMPT set PROMPT=$P$G
 
