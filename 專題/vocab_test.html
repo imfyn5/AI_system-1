@@ -35,12 +35,13 @@
     <script>
         document.getElementById("currentDate").textContent = new Date().toISOString().split('T')[0];
 
+        // 修改 vocabularyData，加入類別: 歷史、科技、教育等
         const vocabularyData = [
-            { question: "1. What is the meaning of 'constructed' ?", options: ["Built", "Destroyed", "Designed", "Observed"], correct: 0 },
-            { question: "2. What is the meaning of 'anniversary' ?", options: ["Celebration", "Battle", "Revolution", "History"], correct: 0 },
-            { question: "3. What does 'renovations' mean?", options: ["Repairs", "Destruction", "Decoration", "Travel"], correct: 0 },
-            { question: "4. What is the synonym of 'icon'?", options: ["Symbol", "Object", "Building", "Tourist"], correct: 0 },
-            { question: "5. What is the meaning of 'illuminated'?", options: ["Lit up", "Destroyed", "Hidden", "Repaired"], correct: 0 }
+            { category: "歷史", question: "1. What is the meaning of 'constructed' ?", options: ["Built", "Destroyed", "Designed", "Observed"], correct: 0 },
+            { category: "科技", question: "2. What is the meaning of 'anniversary' ?", options: ["Celebration", "Battle", "Revolution", "History"], correct: 0 },
+            { category: "教育", question: "3. What does 'renovations' mean?", options: ["Repairs", "Destruction", "Decoration", "Travel"], correct: 0 },
+            { category: "歷史", question: "4. What is the synonym of 'icon'?", options: ["Symbol", "Object", "Building", "Tourist"], correct: 0 },
+            { category: "科技", question: "5. What is the meaning of 'illuminated'?", options: ["Lit up", "Destroyed", "Hidden", "Repaired"], correct: 0 }
         ];
 
         let currentQuestionIndex = 0;
@@ -49,6 +50,10 @@
         function loadQuestion() {
             if (currentQuestionIndex < vocabularyData.length) {
                 const questionData = vocabularyData[currentQuestionIndex];
+
+                // 更新類別顯示為歷史、科技、教育等
+                document.getElementById("category").innerText = questionData.category;
+
                 document.getElementById("question").innerText = questionData.question;
                 const optionsElement = document.getElementById("options");
                 optionsElement.innerHTML = "";
