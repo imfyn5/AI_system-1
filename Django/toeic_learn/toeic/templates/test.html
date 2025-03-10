@@ -1,23 +1,25 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TOEIC學習平台 - 測驗平台</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/test.css">
-    <!-- 引入icon -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TOEIC學習平台</title>
+        <link rel="stylesheet" href="{% static 'css/common.css' %}">
+        <link rel="stylesheet" href="{% static 'css/test.css' %}">
+        <!-- 引入icon -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+        <script src="{% static 'script/all.js' %}"></script>
+    </head>
 <body>
     <div class="header">
         <button class="menu-btn" id="menu-btn">☰</button>
         <h1>TOEIC學習平台</h1>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <div class="nav-buttons">
-            <a href="home.html" target="_self"><button class="nav-btn"><i class="fas fa-home"></i> 首頁</button></a>
-            <a href="test.html" target="_self"><button class="nav-btn"><i class="fas fa-file-alt"></i> 測驗平台</button></a>
-            <a href="user.html" target="_self"><button class="nav-btn"><i class="fas fa-user"></i> 會員註冊/登入</button></a>                        
+            <a href="{% url 'home' %}" target="_self"><button class="nav-btn"><i class="fas fa-home"></i> 首頁</button></a>
+            <a href="{% url 'test' %}" target="_self"><button class="nav-btn"><i class="fas fa-file-alt"></i> 測驗平台</button></a>            
+            <a href="{% url 'login' %}" target="_self"><button class="nav-btn"><i class="fas fa-user"></i> 會員註冊/登入</button></a>                        
         </div>
     </div>
 
@@ -40,7 +42,14 @@
                 開始測驗
             </button>
         </div>
-        
+        <!-- 聽力測驗 -->
+        <div class="test-box" onclick="window.location.href='listening_test.html'">
+            <h2>聽力測驗</h2>
+            <p>測試您的詞彙量，提升語言能力。</p>
+            <button class="free-test" onclick="event.stopPropagation(); window.open('listening_test.html', '_self')">
+                開始測驗
+            </button>
+        </div>
         <!-- 單字測驗 -->
         <div class="test-box" onclick="window.location.href='vocab_test.html'">
             <h2>單字測驗</h2>
