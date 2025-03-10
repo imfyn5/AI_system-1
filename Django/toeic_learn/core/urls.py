@@ -25,6 +25,10 @@ urlpatterns = [
     path("Login/Register/",views.register_view, name="register"),
     path("", views.home, name="home"),
     path('test/', views.test_page, name='test'),
+    path('ai_reading_test', views.ai_reading_test, name='ai_reading_test'),
+    path('reading_test', views.reading_test, name='reading_test'),
+    path('listening_test', views.listening_test, name='listening_test'),
+    path('vocab_test', views.vocab_test, name='vocab_test'),
 ]
 
 

@@ -39,3 +39,16 @@ def register_view(request):
 
 def test_page(request):
     return render(request, 'test.html')
+
+def ai_reading_test(request):
+    return render(request, 'ai_reading_test.html')
+
+def reading_test(request):
+    return render(request, 'reading_test.html')
+
+def listening_test(request):
+    return render(request, 'listening_test.html')
+
+def vocab_test(request):
+    return render(request, 'vocab_test.html')
+
