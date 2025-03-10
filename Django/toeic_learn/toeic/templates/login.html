@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOEIC學習平台 - 會員註冊/登入</title>
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
-    <link rel="stylesheet" href="{% static 'css/user.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <script src="{% static 'script/all.js' %}"></script>
     <!-- 引入icon -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
     <div class="container">
         <div class="form-container">
             <h2>會員登入</h2>
-            <form method="POST" action="{% url 'user' %}">
+            <form method="POST" action="{% url 'login' %}">
                 {% csrf_token %}
                 <input type="text" placeholder="電子郵件" required>
                 <input type="password" placeholder="密碼" required>
