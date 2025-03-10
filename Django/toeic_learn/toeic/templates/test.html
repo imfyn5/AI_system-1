@@ -26,11 +26,14 @@
     <h1>選擇測驗類型</h1>
     <div class="container">
         <!-- 智能AI閱讀測驗（未解鎖時鎖住） -->
-        <div class="test-box locked" id="ai-test-box">
+        <a href="{% url 'ai_reading_test' %}" class="test-box locked" id="ai-test-box">
             <h2>智能AI閱讀測驗</h2>
             <p>透過AI產生文章，分析閱讀能力。</p>
-            <a href="{% url 'ai_reading_test' %}"><button class="free-test">開始測驗</button></a>
-        </div>                
+            <div class="button-container">
+                <button class="unlock-btn">付費解鎖</button>
+            </div>
+        </a>
+                        
         
         <!-- 閱讀測驗 -->
         <a href="{% url 'reading_test' %}" class="test-box">
