@@ -23,7 +23,7 @@ p{
     transition: margin-left 0.3s; /* 當側邊欄開啟時，主要內容區域會平移 */
 }
 .header {
-    display: flex;
+    display: flex !important;
     align-items: center;
     padding: 10px 20px;
     background: linear-gradient(#86c0e6 30%,#bdd9ec 70%);
