@@ -18,17 +18,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from toeic import views
-
+from django.contrib.auth.views import LogoutView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("login/", views.login_view, name="login"),
-    path("Login/Register/",views.register_view, name="register"),
+    path("register/",views.register_view, name="register"),
     path("", views.home, name="home"),
     path('test/', views.test_page, name='test'),
     path('ai_reading_test', views.ai_reading_test, name='ai_reading_test'),
     path('reading_test', views.reading_test, name='reading_test'),
     path('listening_test', views.listening_test, name='listening_test'),
     path('vocab_test', views.vocab_test, name='vocab_test'),
+    path("logout/", LogoutView.as_view(next_page="login"), name="logout"),
 ]
 
 
