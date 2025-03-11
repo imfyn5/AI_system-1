@@ -4,7 +4,9 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from .forms import RegisterForm
+from django.contrib.auth import get_user_model
 
+User = get_user_model() 
 def home(request):
     return render(request, 'home.html')
 
@@ -13,17 +15,31 @@ def user(request):
 
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST['email']
-        password = request.POST['password']
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, '登入成功！')
-            return redirect('home')
-        else:
-            messages.error(request, '帳號或密碼錯誤')
-    
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        if not email or not password:
+            messages.error(request, '請輸入電子郵件和密碼')
+            return render(request, 'login.html')
+
+        try:
+            user = User.objects.get(email=email)
+            user = authenticate(request, username=user.username, password=password)
+
+            if user is not None:
+                login(request, user)
+                messages.success(request, '登入成功！')
+                return redirect('home')
+            else:
+                messages.error(request, '帳號或密碼錯誤')
+                return render(request, 'login.html')
+
+        except User.DoesNotExist:
+            messages.error(request, '該電子郵件未註冊')
+            return render(request, 'login.html')
+
     return render(request, 'login.html')
+
 
 def register_view(request):
     if request.method == 'POST':
