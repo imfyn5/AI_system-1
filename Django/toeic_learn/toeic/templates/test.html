@@ -30,7 +30,11 @@
             </a>
         
             {% if user.is_authenticated %}
-                <span class="welcome-text">歡迎, {{ user.username }}</span>
+                <a href="{% url 'record' %}" target="_self">
+                    <button class="nav-btn">
+                        <i class="fas fa-user"></i> 歡迎, {{ user.username }}
+                    </button>
+                </a>
                 <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="nav-btn">

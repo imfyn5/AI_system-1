@@ -30,6 +30,7 @@ urlpatterns = [
     path('listening_test', views.listening_test, name='listening_test'),
     path('vocab_test', views.vocab_test, name='vocab_test'),
     path("logout/", LogoutView.as_view(next_page="login"), name="logout"),
+    path('record/', views.record, name='record'),
 ]
 
 
