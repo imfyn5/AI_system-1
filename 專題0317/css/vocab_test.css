@@ -4,21 +4,10 @@
     gap: 20px;
     width: 80%;
     max-width: 800px;
+    padding: 15px;
 }
-.box {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    flex: 1;
-    min-height: 200px; /* 設定最小高度，方便填充 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: #7f8c8d;
-}
-.reading-title {
+
+.word-title {
     font-size: 25px;
     font-weight: bold;
     color: #555;
@@ -36,39 +25,6 @@ p{
     font-weight: bold;
 }
 
-form {
-    max-width: 600px; /* 限制題目區塊寬度 */
-    margin: 20px auto; /* 讓表單置中 */
-    padding: 20px; /* 內距 */
-    background-color: white; /* 背景色 */
-    border-radius: 10px; /* 圓角 */
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* 陰影 */
-}
-
-label {
-    display: block; /* 讓選項換行 */
-    background-color: white; /* 每個選項都是白色底 */
-    border: 1px solid #ddd; /* 淡灰色邊框 */
-    border-radius: 5px; /* 圓角 */
-    padding: 10px; /* 內距 */
-    margin: 5px 0; /* 選項間距 */
-    cursor: pointer; /* 滑鼠移動到上面時變手指 */
-}
-
-label:hover {
-    background-color: #f5f5f5; /* 滑鼠移上時變淺灰 */
-}
-
-input[type="radio"] {
-    margin-right: 10px; /* 讓選擇按鈕與文字有距離 */
-}        /* 正確答案與錯誤答案標記 */
-.correct {
-    color: green;
-}
-
-.incorrect {
-    color: red;
-}
 #backButton {
     position: fixed;
     top: 80px;
@@ -95,6 +51,7 @@ input[type="radio"] {
     width: 80%;
     margin: 100px auto; /* 垂直置中 */
 }
+
 
 .test-box {
     width: 30%;
@@ -139,7 +96,7 @@ h2 {
     transform: scale(1.05);
 }
 
-.passage-box {
+.word-box {
     background-color: #f9f9f9;
     padding: 15px;
     border-radius: 15px;
@@ -165,57 +122,10 @@ h2 {
     cursor: pointer;
 }
 .quiz-options li.correct {
-    background: #30ae82;
+    background: #28a745;
     color: white;
 }
 .quiz-options li.incorrect {
     background: #dc3545;
     color: white;
-}
-.option {
-    padding: 10px;
-    border: 1px solid #ccc;
-    margin: 5px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.option:hover {
-    background-color: #f0f0f0;
-}
-
-.selected {
-    background-color: #358996 !important;
-    color: white;
-    font-weight: bold;
-}
-button {
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-}
-
-#btnPrev {
-    background-color: #3498db;
-    color: white;
-}
-
-#btnNext {
-    background-color: #2ecc71;
-    color: white;
-}
-
-#btnRetry {
-    background-color: #e74c3c;
-    color: white;
-}
-
-button:hover {
-    opacity: 0.8;
-    transform: scale(1.05);
 }

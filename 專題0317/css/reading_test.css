@@ -38,7 +38,6 @@ p{
 
 form {
     max-width: 600px; /* 限制題目區塊寬度 */
-    margin: 20px auto; /* 讓表單置中 */
     padding: 20px; /* 內距 */
     background-color: white; /* 背景色 */
     border-radius: 10px; /* 圓角 */
@@ -190,7 +189,6 @@ h2 {
     font-weight: bold;
 }
 button {
-    margin: 10px;
     padding: 10px 20px;
     font-size: 16px;
     font-weight: bold;
