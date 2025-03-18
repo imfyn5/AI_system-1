@@ -68,3 +68,6 @@ def listening_test(request):
 def vocab_test(request):
     return render(request, 'vocab_test.html')
 
+def record(request):
+    return render(request, 'record.html') 
+

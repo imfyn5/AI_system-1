@@ -27,7 +27,9 @@
             {% if messages %}
                 <ul class="messages">
                     {% for message in messages %}
-                        <li class="{{ message.tags }}">{{ message }}</li>
+                        {% if message.tags != "success" %}  {# 過濾掉成功訊息 #}
+                            <li class="{{ message.tags }}">{{ message }}</li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             {% endif %}
