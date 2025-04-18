@@ -26,6 +26,7 @@ SECRET_KEY = "django-insecure-ga393qkdi@vh#*6aqr=5@*wsm!sf5!0-)nhjspu4w8p#6ut1+t
 DEBUG = True
 
 ALLOWED_HOSTS = []
+AUTH_USER_MODEL = 'toeic.User'
 
 
 # Application definition

@@ -17,10 +17,39 @@
         <h1>TOEIC學習平台</h1>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <div class="nav-buttons">
-            <a href="{% url 'home' %}" target="_self"><button class="nav-btn"><i class="fas fa-home"></i> 首頁</button></a>
-            <a href="test.html" target="_self"><button class="nav-btn"><i class="fas fa-file-alt"></i> 測驗平台</button></a>
-            <a href="{% url 'user' %}" target="_self"><button class="nav-btn"><i class="fas fa-user"></i> 會員註冊/登入</button></a>                        
+            <a href="{% url 'home' %}" target="_self">
+                <button class="nav-btn {% if request.path == '/' %}current{% endif %}">
+                    <i class="fas fa-home"></i> 首頁
+                </button>
+            </a>
+        
+            <a href="{% url 'test' %}" target="_self">
+                <button class="nav-btn {% if request.path == '/test/' %}current{% endif %}">
+                    <i class="fas fa-file-alt"></i> 測驗平台
+                </button>
+            </a>
+        
+            {% if user.is_authenticated %}
+                <a href="{% url 'record' %}" target="_self">
+                    <button class="nav-btn">
+                        <i class="fas fa-user"></i> 歡迎, {{ user.username }}
+                    </button>
+                </a>
+                <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-btn">
+                        <i class="fas fa-sign-out-alt"></i> 登出
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" target="_self">
+                    <button class="nav-btn {% if request.path == '/login/' %}current{% endif %}">
+                        <i class="fas fa-user"></i> 會員註冊/登入
+                    </button>
+                </a>
+            {% endif %}
         </div>
+        
     </div>
 
     <!-- 主要內容區域 -->
@@ -28,7 +57,7 @@
             <div class="content">
                 <div class="marquee-container">
                     <div class="marquee-text">
-                        <h1>探索英語學習的無限可能，讓您的進步從這裡開始，打造專屬於您的高效多益學習之旅！
+                        <h1>探索英語學習的無限可能，讓您的進步從這裡開始，打造專屬於您的高效多益學習之旅！</h1>
                     </div>
                 </div>
             </div>
