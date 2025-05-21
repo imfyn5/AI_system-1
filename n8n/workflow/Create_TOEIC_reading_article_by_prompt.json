@@ -1,12 +1,12 @@
 {
-  "name": "Create TOEIC reading article",
+  "name": "Create TOEIC reading article by prompt",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        0,
+        300,
         0
       ],
       "id": "66549019-6176-4d1c-ba94-a1a16ea44777",
@@ -16,38 +16,52 @@
       "parameters": {
         "table": {
           "__rl": true,
-          "mode": "name",
-          "value": ""
-        }
+          "value": "reading_tests",
+          "mode": "list",
+          "cachedResultName": "reading_tests"
+        },
+        "options": {}
       },
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.4,
       "position": [
-        980,
+        1420,
         0
       ],
       "id": "3b1a4e6e-4288-4773-a688-f2bfe3723f3f",
-      "name": "MySQL"
+      "name": "MySQL",
+      "credentials": {
+        "mySql": {
+          "id": "L6qVQckGtYxd5rWi",
+          "name": "Mariadb"
+        }
+      }
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
+              "id": "06918e18-95b4-4f76-b099-70d85d6461e5",
+              "name": "id",
+              "value": "={{(+new Date).toString(36).slice(-5) + Math.random().toString(36).substr(2, 5)}}",
+              "type": "string"
+            },
+            {
               "id": "d8120562-4cf7-420b-80da-c38353feeeb3",
-              "name": "Title",
+              "name": "title",
               "value": "={{   JSON.parse($json.output).Title  }}",
               "type": "string"
             },
             {
               "id": "36e3a5e2-7b2e-448e-aed2-6fe597e11e6e",
-              "name": "Article",
+              "name": "passage",
               "value": "={{   JSON.parse($json.output).Article  }}",
               "type": "string"
             },
             {
               "id": "97468dda-9029-4f12-9a16-22d26bfa3794",
-              "name": "Category",
+              "name": "category",
               "value": "={{   JSON.parse($json.output).Category  }}",
               "type": "string"
             }
@@ -58,7 +72,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        800,
+        1240,
         0
       ],
       "id": "5bb31555-675e-46de-bbf7-b843dcab6208",
@@ -81,7 +95,7 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        440,
+        880,
         0
       ],
       "id": "169686e1-5233-4196-b73e-200f086c10f0",
@@ -122,16 +136,66 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        220,
+        560,
         0
       ],
       "id": "90dd2f88-ea6d-4166-bcdf-2a8afea3f5d2",
       "name": "Input_Mapping",
       "alwaysOutputData": false,
       "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        -220
+      ],
+      "id": "e4b022dc-c3d8-40dc-86bd-cfb6455b8207",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "resource": "assistant",
+        "assistantId": {
+          "__rl": true,
+          "value": "asst_oVehlQPLDyJhnaDZfemOYa6d",
+          "mode": "list",
+          "cachedResultName": "Create TOEIC reading article"
+        },
+        "prompt": "define",
+        "text": "={{ $json.prompt }}",
+        "memory": "threadId",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        880,
+        -220
+      ],
+      "id": "f517b1ce-0c9a-4afd-a321-2b550b1318c9",
+      "name": "Article_Generator1",
+      "credentials": {
+        "openAiApi": {
+          "id": "6694NeDawMXKUL3Q",
+          "name": "OpenAi account"
+        }
+      }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "prompt": "請分析這篇新聞: https://scitechdaily.com/?p=472603 並將他改為 TOEIC 閱讀文章的格式\n這個是他在資料庫內的類別: science\n然後生成以下 JSON 格式的回應：\n{\n  \"Title\": \"提取或生成一個簡潔且能反映文章主題的標題\",\n  \"Article\": \"摘要保留原文最重要的資訊\",\n  \"Category\": \"根據我提供的類別填入\",\n  \"Difficulty\": \"基於用詞複雜性、句子結構和主題專業性來評估（簡單、中等或高級）\"\n}\n\n請只返回 JSON 格式的回覆，不要包含其他解釋。\n"
+        }
+      }
+    ]
+  },
   "connections": {
     "When clicking ‘Test workflow’": {
       "main": [
@@ -176,13 +240,24 @@
           }
         ]
       ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Article_Generator1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "bbfc6d05-f322-48f4-b20d-b27c3087f961",
+  "versionId": "ebe5c4c6-1677-4f84-a3c7-2c8f936aa527",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "b9bae86621ef488435083a4834adc99ad9c3f696cba3a7b4279cebff39982c9e"
