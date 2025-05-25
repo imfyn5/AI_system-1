@@ -1,16 +1,25 @@
 # AI_system
 
-#啟動虛擬環境
-env\Scripts\activate
+## 安裝環境
 
+- Python 3.12.9
+- Create virtual environment & Initialize Virtual Environment
+
+```
+venv env
+./env/Scripts/activate # Linux or Mac
+.\env\Scripts\activate.bat # Windows CMD
+.\env\Scripts\Activate.ps1 # Windows PowerShell
+pip install -r requirements.txt
+```
 
 ## 安裝專案
 
 Django 載入
 
-python
+```
 python manage.py createsuperuser
-python manage.py migrate  
+python manage.py migrate
 python manage.py runserver
-
+```
 

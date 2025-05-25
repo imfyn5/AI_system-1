@@ -1,0 +1,124 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer API key"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"gpt-4\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"你是一個 TOEIC 單字出題助手，請產生一題「選出同義詞」的單字選擇題，格式為 JSON，如下：{\\\"question\\\": \\\"Which word is a synonym of 'happy'?\\\", \\\"options\\\": {\\\"a\\\": \\\"angry\\\", \\\"b\\\": \\\"joyful\\\", \\\"c\\\": \\\"slow\\\", \\\"d\\\": \\\"tall\\\"}, \\\"answer\\\": \\\"b\\\", \\\"vocab\\\": \\\"happy\\\", \\\"explanation\\\": \\\"'Happy' means feeling or showing pleasure or contentment.\\\"}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"請出一題\"\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -120,
+        -80
+      ],
+      "id": "70b350d1-6865-4b11-9d20-f52020e53bf8",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawJson = items[0].json.choices[0].message.content;\n\n// 轉為物件\nconst parsed = JSON.parse(rawJson);\n\nconst answerKey = parsed.answer;\nconst correctAnswer = parsed.options[answerKey];\n\nreturn [\n  {\n    json: {\n      question_type: \"vocab\",\n      question_text: parsed.question,\n      option_a_text: parsed.options.a,\n      option_b_text: parsed.options.b,\n      option_c_text: parsed.options.c,\n      option_d_text: parsed.options.d,\n      is_correct: correctAnswer,\n      difficulty_level: 2,\n      explanation: parsed.explanation\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        -80
+      ],
+      "id": "94749b92-fdcf-4d2f-ab9c-be8d8f47618b",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "django-test",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        -80
+      ],
+      "id": "22ca02d0-05d9-4e83-a8da-86a6a2a7d11e",
+      "name": "Webhook",
+      "webhookId": "5a56615b-4912-4829-b472-0ad89d88e121"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        280,
+        -80
+      ],
+      "id": "42163110-1c6d-4311-91d2-36f74ec421fe",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1abf6139-446c-48bd-900d-642f0735f872",
+  "meta": {
+    "instanceId": "13cb2a3cbdacc4c849eec7355aab3e5f0e2e7241af9261c93a1baec11e51bcc8"
+  },
+  "id": "oH60GzZHkdb0ApBo",
+  "tags": []
+}
