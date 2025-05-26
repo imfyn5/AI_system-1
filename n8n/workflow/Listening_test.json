@@ -1,0 +1,209 @@
+{
+  "name": "ai",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=你是一個專注英文多益聽力測試的老師，現在幫我生成符合多益聽力part4的隨機題目\n\n格式為:\n{\n\"part\": \"part幾\",\n\"聽力內容\":\"聽力內容文本\"\n\"題目\": \"題目內容\",\n\"選項A\":\"內容\",\n\"選項B\":\"內容\",\n\"選項C\":\"內容\",\n\"選項D\":\"內容\",\n\"正確答案\":\"選項\",\n\"解釋\":\"解答解釋\"\n}\n請確保內容為英文，每次1題",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -660,
+        -280
+      ],
+      "id": "e0078726-763a-42c7-ba79-c66e733ba3e3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -700,
+        -120
+      ],
+      "id": "02b9c746-4c52-48a2-a6fe-681f77db4f23",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "OqamMH5ODh901Zlz",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得 AI Agent 回傳的 output 欄位內容\nconst raw = $input.first().json.output;\n\n// 將字串轉為 JSON\nconst parsed = JSON.parse(raw);\n\n\nconst voices = [\n  { id: \"pqHfZKP75CvOlQylNhV4\", accent: \"American\" },\n  { id: \"ZQe5CZNOzWyzPSCn5a3c\", accent: \"Australian\" },\n  { id: \"ThT5KcBeYPX3keUQqHPh\", accent: \"British\" }\n];\n\n// 隨機選一個\nconst randomVoice = voices[Math.floor(Math.random() * voices.length)];\n\nreturn [\n  {\n    json: {\n      voice_id: randomVoice.id,\n      accent: randomVoice.accent,\n      part: parsed[\"part\"],\n      audio: parsed[\"聽力內容\"],\n      question: parsed[\"題目\"],\n      optionA: parsed[\"選項A\"],\n      optionB: parsed[\"選項B\"],\n      optionC: parsed[\"選項C\"],\n      optionD: parsed[\"選項D\"],\n      answer: parsed[\"正確答案\"],\n      explanation: parsed[\"解釋\"]\n    }\n  }\n];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -284,
+        -280
+      ],
+      "id": "aadc9529-ca4a-4d47-b23d-d1f9851a9834",
+      "name": "隨機選擇口音與規則化"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/text-to-speech/{{ $json.voice_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{$json[\"audio\"]}} question{{ $json.question }}\",\n  \"model_id\": \"eleven_monolingual_v1\",\n  \"voice_settings\": {\n    \"speed\": 1.00,\n    \"stability\": 0.5,\n    \"similarity_boost\": 0.75\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        -280
+      ],
+      "id": "9a6cb8fa-0539-44d8-8ce2-d84be7849359",
+      "name": "生成語音",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EQ04GMI2YyiGYMiw",
+          "name": "Header Auth account"
+        },
+        "httpCustomAuth": {
+          "id": "qOEb3wWXagfBJSEh",
+          "name": "11Labs"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const voice_id = $input.first().json.voice_id;\nconst accent = $input.first().json.accent;\nconst question = $input.first().json.question;\nconst optionA = $input.first().json.optionA;\nconst optionB = $input.first().json.optionB;\nconst optionC= $input.first().json.optionC;\nconst optionD = $input.first().json.optionD;\nconst answer = $input.first().json.answer;\nconst explanation = $input.first().json.explanation;\n\nconst jsonContentObject = {\n  voice_id,\n  accent,\n  question,\n  options: {\n    A: optionA,\n    B: optionB,\n    C: optionC,\n    D: optionD\n  },\n  answer,\n  explanation\n};\n\nconst jsonString = JSON.stringify(jsonContentObject);\n\nreturn [\n  {\n    json: {\n      json_data: jsonString,  // 這是要傳給 Django 的 JSON 字串欄位\n    },\n    binary: {\n      data: {\n        ...$input.first().binary.data,  // 音訊檔二進位資料\n        fileName: `${accent}.mp3`,      // 可指定音訊檔名\n        mimeType: 'audio/mpeg'          // 音訊檔 MIME type\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        -280
+      ],
+      "id": "ada0efdc-f132-4fd7-96e8-24cb37daecf9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "path": "button-click",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        -280
+      ],
+      "id": "b24dca9a-d557-4788-a077-40487b6c519a",
+      "name": "Webhook",
+      "webhookId": "70b21d98-dd66-4da8-aeec-aebb67e6af50"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        300,
+        -280
+      ],
+      "id": "f11687ac-2a5a-410a-ae34-7abecd8b205e",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "隨機選擇口音與規則化",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "隨機選擇口音與規則化": {
+      "main": [
+        [
+          {
+            "node": "生成語音",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "生成語音": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "52d44cb5-ead3-4ca3-b2f8-de3b5c1b30d9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c599d92bc989e8eff0a65d711091ab197a9674b033692c60019d725a61411d20"
+  },
+  "id": "34b80qdKTey0q7Io",
+  "tags": []
+}
