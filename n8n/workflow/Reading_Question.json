@@ -1,0 +1,250 @@
+{
+  "name": "Reading Question",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        20
+      ],
+      "id": "44752243-83b8-48cd-b3cb-db7e3175e9ac",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2649fa7e-8c09-4c79-84a2-f2609ec922fe",
+              "name": "passage_id",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "a1abcc8d-45a1-40cb-822d-2141019f199b",
+              "name": "passage",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "6e9137ea-30f4-496a-a06d-76a6e9687b4f",
+              "name": "question_number",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "52b9fd74-fcc3-43ac-98d1-7bcde8165f97",
+              "name": "difficulty_level",
+              "value": 0,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        20
+      ],
+      "id": "28178478-bbc7-4976-a2a5-42c8d17fbd76",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "assistant",
+        "assistantId": {
+          "__rl": true,
+          "value": "asst_2UMtlYOPtsIcUFYljbAbr7iK",
+          "mode": "list",
+          "cachedResultName": "Create TOEIC Reading Questions"
+        },
+        "prompt": "define",
+        "text": "=passage_id: {{ $json.passage_id }}\npassage: {{ $json.passage }}\nquestion_number: {{ $json.difficulty_level }}\ndifficulty_level: {{ $json.question_number }}",
+        "memory": "threadId",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        220,
+        20
+      ],
+      "id": "ae14c4b1-7853-454f-b0c3-449cdb8d1951",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "PTWa1p1SoqTw0K6I",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6bce2038-759e-4539-afa7-9030dc16020c",
+              "name": "output",
+              "value": "={{ JSON.parse($json.output) }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        20
+      ],
+      "id": "4d2bb952-3e7b-47ba-94df-b12d96fc75d5",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -220,
+        -180
+      ],
+      "id": "61dcd9ab-dda0-452e-9cfb-8ada9bbbb04b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.questions",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        780,
+        20
+      ],
+      "id": "7ae500cf-d88b-46e7-a95d-e94b0c907c47",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO Question (\n    question_type, passage_id, question_text, \n    option_a_text, option_b_text, option_c_text, option_d_text,\n    difficulty_level, is_correct, explanation\n) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+        "options": {
+          "queryReplacement": "={{ $json.question_type }},{{ $json.passage_id }},{{ $json.question_text }},{{ $json.option_a_text }},{{ $json.option_b_text }},{{ $json.option_c_text }},{{ $json.option_d_text }},{{ $json.difficulty_level }},{{ $json.is_correct }},{{ $json.explanation }}"
+        }
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        1000,
+        20
+      ],
+      "id": "3b60e931-e793-49da-ada6-06dd3d63c63a",
+      "name": "MySQL",
+      "credentials": {
+        "mySql": {
+          "id": "EGpdiWIR6jmv7zfI",
+          "name": "MySQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "passage_id": 3,
+          "passage": "Throughout history, scientific discoveries have significantly influenced our understanding of the world. The early scientists, such as Galileo and Newton, laid the groundwork for the natural sciences by introducing concepts of physics and astronomy. In the 19th century, Darwin's theory of evolution changed how we view biological life on Earth. The advent of technology, particularly in the 20th century, resulted in revolutionary changes in chemistry and physics, leading to advancements like modern medicine and space exploration. Each of these developments has built upon previous knowledge, illustrating the cumulative nature of scientific inquiry. Today, scientists continue to push the boundaries of knowledge, facing challenges such as climate change and medical breakthroughs, while relying on methods established by their predecessors. The journey of science is ongoing, with each discovery paving the way for future innovations.",
+          "difficulty_level": 3,
+          "question_number": 3
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "MySQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1df05def-63ec-413f-baba-7e15a489b2a2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "687947f28153013028ce7220a321f04a858e844b5e778da90f88e260aecff7d9"
+  },
+  "id": "4023xYY5mSFkd0lJ",
+  "tags": []
+}

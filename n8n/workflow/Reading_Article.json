@@ -1,0 +1,252 @@
+{
+  "name": "Reading Article",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        0
+      ],
+      "id": "4b002552-2a3b-4184-8a9a-58f2d152152d",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ],
+      "id": "461b8634-9844-4797-8f51-c8e727303b03",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "assistant",
+        "assistantId": {
+          "__rl": true,
+          "value": "asst_oVehlQPLDyJhnaDZfemOYa6d",
+          "mode": "list",
+          "cachedResultName": "Create TOEIC reading article"
+        },
+        "prompt": "define",
+        "text": "topic: science\nreading_level: intermediate",
+        "memory": "threadId",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        440,
+        0
+      ],
+      "id": "bed386a9-a027-4da6-b4dd-0e922621f0d4",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "PTWa1p1SoqTw0K6I",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO Reading_Passage (\n    title, \n    content, \n    word_count, \n    reading_level, \n    topic, \n    source\n) VALUES (\n    $1, \"{{ $json.output.content }}\", $3, $4, $5, $6\n);\n\nSELECT LAST_INSERT_ID() as new_passage_id;",
+        "options": {
+          "queryReplacement": "={{ $json.output.title }},,{{ $json.output.word_count }},{{ $json.output.reading_level }},{{ $json.output.topic }},{{ $json.output.source }}"
+        }
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        1000,
+        0
+      ],
+      "id": "826b14f6-fe5e-4b25-9831-03551c277cec",
+      "name": "MySQL",
+      "credentials": {
+        "mySql": {
+          "id": "EGpdiWIR6jmv7zfI",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c37ed655-33f6-430c-9c57-60b5c7bd1bac",
+              "name": "output",
+              "value": "={{ JSON.parse($json.output) }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        0
+      ],
+      "id": "ea8136ac-e22e-4a5a-a6ac-25266095af4f",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f8ba8747-4e49-438d-9e75-f15123e9ba49",
+              "name": "passage_id",
+              "value": "={{ $json.new_passage_id }}",
+              "type": "number"
+            },
+            {
+              "id": "b278cabd-08ce-48cc-9790-9211c8fd3f1a",
+              "name": "passage",
+              "value": "={{ $('Edit Fields1').item.json.output.content }}",
+              "type": "string"
+            },
+            {
+              "id": "350fd8e2-0196-4762-889e-8b008c6388e4",
+              "name": "difficulty_level",
+              "value": 3,
+              "type": "number"
+            },
+            {
+              "id": "8c195566-40d6-4769-9e45-5209dd120600",
+              "name": "question_number",
+              "value": 3,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1220,
+        0
+      ],
+      "id": "2aa4f8c7-5cc1-4983-a1ba-9ba40e9a4459",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "4023xYY5mSFkd0lJ",
+          "mode": "list",
+          "cachedResultName": "Reading Question"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "d311f918-e9f2-430c-9319-5e858dfbbbcd",
+      "name": "Execute Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "MySQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cb8a85d6-c417-4c86-8781-4e67e079e5d8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "687947f28153013028ce7220a321f04a858e844b5e778da90f88e260aecff7d9"
+  },
+  "id": "qGRU14FAKeXLqEC6",
+  "tags": []
+}
