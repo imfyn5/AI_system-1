@@ -137,42 +137,34 @@ def listening_test(request):
     """
     return render(request, 'listening_test.html')
 
-@require_POST
-@csrf_exempt
 def vocab_test(request):
-    """
-    單字測驗視圖，向 n8n Webhook 發送請求並處理回應。
-    """
     try:
-        print("Attempting to connect to n8n...")
-        response = requests.post(N8N_WEBHOOK_URL)
-        response.raise_for_status() # 檢查 HTTP 請求是否成功
-
-        print(f"n8n response status code: {response.status_code}")
+        # 修正變數名稱衝突
+        api_response = requests.get('http://n8n.ntub.local/webhook/tests/vocab/question')
         
-        # 獲取原始的 JSON 字串
-        raw_n8n_response_text = response.text
-        print(f"Raw n8n response text: {raw_n8n_response_text}")
-
-        # 解析 JSON
-        n8n_response_data = response.json() 
-        print(f"Parsed n8n response data (Python dict): {n8n_response_data}")
-        
-        questions_list = n8n_response_data.get('questions', []) 
-        print(f"Extracted questions_list: {questions_list}")
-
-        return render(request, 'vocab_test.html', {'questions': questions_list})
-
+        # 檢查 API response status
+        if api_response.status_code == 200:
+            questions_data = api_response.json()
+            print(f"API Response: {questions_data}")
+            
+            # 將資料傳遞給 template
+            context = {
+                'questions_data': questions_data
+            }
+            return render(request, 'vocab_test.html', context)
+        else:
+            return JsonResponse({
+                'error': f'API request failed with status: {api_response.status_code}'
+            }, status=500)
+            
     except requests.exceptions.RequestException as e:
-        print(f"Error connecting to n8n: {e}")
-        return JsonResponse({'error': f'Error connecting to n8n: {e}'}, status=500)
-    except json.JSONDecodeError:
-        # 如果 JSON 解析失敗，打印原始文本
-        print(f"Failed to decode JSON from n8n response. Raw text: {response.text}")
-        return JsonResponse({'error': 'Failed to decode JSON from n8n response. Check n8n response format.'}, status=500)
+        return JsonResponse({
+            'error': f'Failed to fetch questions: {str(e)}'
+        }, status=500)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return JsonResponse({'error': f'An unexpected error occurred: {e}'}, status=500)
+        return JsonResponse({
+            'error': f'An unexpected error occurred: {str(e)}'
+        }, status=500)
 
 def record(request):
     """
