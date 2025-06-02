@@ -9,6 +9,154 @@
     <link rel="stylesheet" href="{% static 'css/reading_test.css' %}">
     <script src="{% static 'script/all.js' %}"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 新增樣式 */
+        .navigation-buttons {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .navigation-buttons button {
+            margin: 0 10px;
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .nav-btn:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .submit-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .submit-btn:hover {
+            background-color: #1e7e34;
+        }
+        
+        #question-counter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin: 10px 0;
+            font-size: 18px;
+            padding: 0 20px;
+        }
+        
+        .counter-text {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .quiz-options {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .quiz-options li {
+            margin: 8px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .quiz-options li:hover {
+            border-color: #007bff;
+        }
+        
+        .quiz-options input[type="radio"] {
+            margin-right: 10px;
+        }
+        
+        .quiz-options .selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+        }
+        
+        .difficulty-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .difficulty-easy {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .difficulty-medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .difficulty-hard {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .passage-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .passage-meta {
+            font-size: 14px;
+            color: #666;
+            text-align: right;
+            display: flex;
+        }
+        
+        .meta-item {
+            display: block;
+            margin-bottom: 5px;
+            padding: 4px 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .passage-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 8px;
+        }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -17,154 +165,400 @@
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="reading-title">閱讀測驗</span>
     </div>
-    <div class="container">
-        <h1>Reading Passage</h1>
-        <p>發佈日期: <span id="currentDate"></span></p>
-        <div class="category-box">類別: <span id="category"></span></div>
-        <div class="passage-box">
-            <p id="passage">The Eiffel Tower, located in Paris, France, was constructed in 1889 as the entrance arch for the 1889 World's Fair, which celebrated the 100th anniversary of the French Revolution. Designed by the engineer Gustave Eiffel, the tower stands at an impressive height of 300 meters (984 feet), making it one of the tallest structures in the world at the time of its completion.
-                The tower is made of iron and was initially criticized by some of Paris's leading artists and intellectuals for its design. However, it has since become a global cultural icon of France and one of the most recognizable structures in the world. The Eiffel Tower attracts millions of visitors each year, who come to admire its stunning views of the Paris skyline from its observation decks.
-                In addition to its architectural significance, the Eiffel Tower also serves as a hub for various cultural events and exhibitions. It is beautifully illuminated at night, creating a magical atmosphere that captivates both locals and tourists. Over the years, the tower has undergone several renovations and has been the backdrop for numerous films, artworks, and photographs, solidifying its status as a beloved landmark.
-            </p>
-        </div>
-        <div class="quiz-box">
-            <p id="question"></p>
-            <ul id="options" class="quiz-options"></ul>
-        </div>
-    </div>
-    </div>
-    <a href="{% url 'test' %}" id="backButton">回到上一頁</a>
     
+    <div class="container">
+        {% if error %}
+            <div class="error-message">
+                <h4><i class="fas fa-exclamation-triangle"></i> 錯誤</h4>
+                <p>{{ error }}</p>
+                <button onclick="location.reload()" class="nav-btn">重新載入</button>
+            </div>
+        {% elif questions_data %}
+            <h1>Reading Passage</h1>
+            <p>發佈日期: <span id="currentDate"></span></p>
+            
+            <!-- Passage 資訊 -->
+            <div class="passage-info">
+                <div class="category-box">
+                    類別: <span>{{ questions_data.passage.topic }}</span>
+                </div>
+                <div class="passage-meta">
+                    <div class="meta-item">字數: {{ questions_data.passage.word_count }}</div>
+                    <div class="meta-item">閱讀級別: {{ questions_data.passage.reading_level }}</div>
+                    {% if questions_data.passage.source %}
+                    <div class="meta-item">來源: {{ questions_data.passage.source }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 固定的 Passage 內容 -->
+            <div class="passage-box">
+                <h3 id="passage-title">{{ questions_data.passage.title }}</h3>
+                <p id="passage">{{ questions_data.passage.content }}</p>
+            </div>
+            
+            <!-- 題目計數器和難度標籤 -->
+             <div>
+                 <div id="question-counter">
+                    <div class="difficulty-badge" id="difficulty-badge">Loading...</div>
+                    <div class="counter-text">
+                        題目 <span id="current-question">1</span> / <span id="total-questions">{{ questions_data.questions|length }}</span>
+                    </div>
+                    <div></div> <!-- 空的 div 用於平衡 flex layout -->
+                </div>
+                
+                <!-- 動態載入的題目區域 -->
+                <div id="question-container">
+                    <div class="quiz-box">
+                        <p id="question">Loading question...</p>
+                        <ul id="options" class="quiz-options">
+                            <!-- 選項會動態載入 -->
+                        </ul>
+                    </div>
+                </div>
+             </div>
+           
+            
+            <!-- 導航按鈕 -->
+            <div class="navigation-buttons">
+                <button id="prev-btn" class="nav-btn" onclick="previousQuestion()" disabled>
+                    <i class="fas fa-chevron-left"></i> 上一題
+                </button>
+                <button id="next-btn" class="nav-btn" onclick="nextQuestion()">
+                    下一題 <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+        {% else %}
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>載入題目中...</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <a href="{% url 'test' %}" id="backButton">回到上一頁</a>
+   
     <script>
+        // 設定當前日期
         document.getElementById("currentDate").textContent = new Date().toISOString().split('T')[0];
-
-        const categoryKeywords = {
-            "歷史": ["eiffel tower", "constructed", "1889", "landmarks"],
-            "旅遊": ["paris", "visitors", "famous", "attracts"],
-            "建築": ["constructed", "landmarks", "tower"],
-            "文化": ["world", "famous", "heritage"],
-            "科技": ["innovation", "engineering", "design"]
-        };
-
-        const extendedPassage = "The Eiffel Tower, located in Paris, France, was constructed in 1889 as the entrance arch for the 1889 World's Fair, which celebrated the 100th anniversary of the French Revolution. Designed by the engineer Gustave Eiffel, the tower stands at an impressive height of 300 meters (984 feet), making it one of the tallest structures in the world at the time of its completion. The tower is made of iron and was initially criticized by some of Paris's leading artists and intellectuals for its design. However, it has since become a global cultural icon of France and one of the most recognizable structures in the world. The Eiffel Tower attracts millions of visitors each year, who come to admire its stunning views of the Paris skyline from its observation decks. In addition to its architectural significance, the Eiffel Tower also serves as a hub for various cultural events and exhibitions. It is beautifully illuminated at night, creating a magical atmosphere that captivates both locals and tourists. Over the years, the tower has undergone several renovations and has been the backdrop for numerous films, artworks, and photographs, solidifying its status as a beloved landmark.";
-
-        const passageElement = document.getElementById("passage");
-        const questionElement = document.getElementById("question");
-        const optionsElement = document.getElementById("options");
-
-        // 將擴展的段落內容儲存在本地存儲
-        localStorage.setItem("passage", extendedPassage);
-
-        const passageText = localStorage.getItem("passage") || ""; // 從本地存儲中讀取段落內容
-
-        // 將段落的第一個字母轉為大寫
-        const formattedPassage = passageText.charAt(0).toUpperCase() + passageText.slice(1);
-
-        passageElement.innerText = formattedPassage;
-
-        let selectedCategories = [];
-        for (const [category, keywords] of Object.entries(categoryKeywords)) {
-            if (keywords.some(keyword => passageText.includes(keyword))) {
-                selectedCategories.push(category);
-            }
-        }
-
-        if (selectedCategories.length === 0) {
-            const randomCategories = Object.keys(categoryKeywords);
-            selectedCategories.push(randomCategories[Math.floor(Math.random() * randomCategories.length)]);
-        }
-
-        document.getElementById("category").innerHTML = selectedCategories.map(cat => `<span>#${cat}</span>`).join(" ");
-
-        const readingData = [
-            {
-                question: "1. When was the Eiffel Tower built?",
-                options: ["1889", "1905", "1856", "1923"],
-                correct: 0
-            },
-            {
-                question: "2. Who designed the Eiffel Tower?",
-                options: ["Gustave Eiffel", "Alexander Gustave", "Pierre Eiffel", "Charles Eiffel"],
-                correct: 0
-            },
-            {
-                question: "3. What was the Eiffel Tower originally built for?",
-                options: ["World's Fair", "Tourism", "Military base", "Radio transmission"],
-                correct: 0
-            },
-            {
-                question: "4. How tall is the Eiffel Tower?",
-                options: ["300 meters", "200 meters", "150 meters", "400 meters"],
-                correct: 0
-            },
-            {
-                question: "5. What material is the Eiffel Tower primarily made of?",
-                options: ["Steel", "Concrete", "Wood", "Brick"],
-                correct: 0
-            }
-        ];
-
+        
+        {% if questions_data %}
+        // 將 Django 資料傳遞給 JavaScript
+        const questionsData = {{ questions_data|safe }};
         let currentQuestionIndex = 0;
-        let score = 0; // 初始化得分
+        let userAnswers = {}; // 儲存使用者答案
 
-        function loadQuestion() {
-            if (currentQuestionIndex < readingData.length) {
-                const questionData = readingData[currentQuestionIndex];
-                questionElement.innerText = questionData.question;
-                optionsElement.innerHTML = "";
+        // 清空所有填答資料的函數
+        function clearAllAnswers() {
+            // 清空記憶體中的答案
+            userAnswers = {};
+            
+            // 清空 localStorage
+            localStorage.removeItem('reading_test_answers');
+            
+            // 清空頁面上所有選中的選項
+            const allRadios = document.querySelectorAll('input[name="answer"]');
+            allRadios.forEach(radio => {
+                radio.checked = false;
+            });
+            
+            // 移除所有選項的視覺選中狀態
+            const allOptions = document.querySelectorAll('.quiz-options li');
+            allOptions.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            console.log('All answers cleared');
+        }
 
-                questionData.options.forEach((option, index) => {
-                    const li = document.createElement("li");
-                    li.innerText = option;
-
-                    li.addEventListener("click", function () {
-                        if (index === questionData.correct) {
-                            li.classList.add("correct");
-                            score++; // 正確回答時增加得分
-                        } else {
-                            li.classList.add("incorrect");
-                        }
-                        // 禁用所有選項以防止再次點擊
-                        optionsElement.querySelectorAll('li').forEach(item => item.style.pointerEvents = 'none');
-                        currentQuestionIndex++;
-                        setTimeout(loadQuestion, 1000); // 1秒後加載下一題
-                    });
-
-                    optionsElement.appendChild(li);
+        // 清空當前題目的答案
+        function clearCurrentAnswer() {
+            const currentQuestion = questionsData.questions[currentQuestionIndex];
+            if (currentQuestion) {
+                // 從記憶體中移除當前題目的答案
+                delete userAnswers[currentQuestion.question_id];
+                
+                // 更新 localStorage
+                localStorage.setItem('reading_test_answers', JSON.stringify(userAnswers));
+                
+                // 清空當前頁面的選中狀態
+                const currentRadios = document.querySelectorAll('input[name="answer"]');
+                currentRadios.forEach(radio => {
+                    radio.checked = false;
                 });
-            } else {
-                questionElement.innerText = `測驗結束！您的得分是 ${score} / ${readingData.length}`;
-                optionsElement.innerHTML = "";
+                
+                const currentOptions = document.querySelectorAll('.quiz-options li');
+                currentOptions.forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                console.log(`Answer for question ${currentQuestion.question_id} cleared`);
             }
         }
 
-        window.addEventListener("load", function() {
-            passageElement.innerText = formattedPassage; // 確保段落內容顯示正確
-            loadQuestion();
+        // 重置整個測驗的函數
+        function resetQuiz() {
+            clearAllAnswers();
+            currentQuestionIndex = 0;
+            displayCurrentQuestion();
+            updateCounter();
+            console.log('Quiz reset to beginning');
+        }
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 先清空所有之前的答案資料
+            clearAllAnswers();
+            
+            if (questionsData && questionsData.questions && questionsData.questions.length > 0) {
+                displayCurrentQuestion();
+                updateCounter();
+            } else {
+                showError('沒有可用的題目資料');
+            }
         });
+
+        function displayCurrentQuestion() {
+            if (!questionsData.questions || questionsData.questions.length === 0) {
+                showError('沒有題目資料');
+                return;
+            }
+            
+            const question = questionsData.questions[currentQuestionIndex];
+            
+            // 更新難度標籤
+            const difficultyBadge = document.getElementById('difficulty-badge');
+            const difficulty = question.difficulty_level || 'medium';
+            difficultyBadge.textContent = difficulty.toUpperCase();
+            difficultyBadge.className = `difficulty-badge difficulty-${difficulty}`;
+            
+            // 更新題目
+            document.getElementById('question').textContent = `Q${currentQuestionIndex + 1}. ${question.question_text}`;
+            
+            // 更新選項
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            const options = ['a', 'b', 'c', 'd'];
+            options.forEach(option => {
+                const optionText = question[`option_${option}_text`];
+                if (optionText) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <label>
+                            <input type="radio" name="answer" value="${option}" 
+                                   ${userAnswers[question.question_id] === option ? 'checked' : ''}>
+                            <span>${option.toUpperCase()}. ${optionText}</span>
+                        </label>
+                    `;
+                    
+                    // 添加點擊事件
+                    li.addEventListener('click', function() {
+                        const radio = li.querySelector('input[type="radio"]');
+                        radio.checked = true;
+                        
+                        // 移除其他選項的選中樣式
+                        optionsContainer.querySelectorAll('li').forEach(item => {
+                            item.classList.remove('selected');
+                        });
+                        
+                        // 添加當前選項的選中樣式
+                        li.classList.add('selected');
+                        
+                        // 儲存答案
+                        saveCurrentAnswer();
+                    });
+                    
+                    optionsContainer.appendChild(li);
+                }
+            });
+            
+            // 恢復之前選擇的答案樣式
+            if (userAnswers[question.question_id]) {
+                const selectedOption = optionsContainer.querySelector(`input[value="${userAnswers[question.question_id]}"]`);
+                if (selectedOption) {
+                    selectedOption.closest('li').classList.add('selected');
+                }
+            }
+            
+            updateNavigationButtons();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questionsData.questions.length - 1) {
+                saveCurrentAnswer();
+                currentQuestionIndex++;
+                displayCurrentQuestion();
+                updateCounter();
+                scrollToTop();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                saveCurrentAnswer();
+                currentQuestionIndex--;
+                displayCurrentQuestion();
+                updateCounter();
+                scrollToTop();
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            // 控制上一題按鈕
+            prevBtn.disabled = currentQuestionIndex === 0;
+            
+            // 控制下一題/完成按鈕
+            if (currentQuestionIndex === questionsData.questions.length - 1) {
+                nextBtn.innerHTML = '<i class="fas fa-check"></i> 完成測驗';
+                nextBtn.className = 'submit-btn';
+                nextBtn.onclick = submitQuiz;
+            } else {
+                nextBtn.innerHTML = '下一題 <i class="fas fa-chevron-right"></i>';
+                nextBtn.className = 'nav-btn';
+                nextBtn.onclick = nextQuestion;
+            }
+        }
+
+        function updateCounter() {
+            document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+            document.getElementById('total-questions').textContent = questionsData.questions.length;
+        }
+
+        function saveCurrentAnswer() {
+            const selectedOption = document.querySelector('input[name="answer"]:checked');
+            if (selectedOption && questionsData.questions[currentQuestionIndex]) {
+                const questionId = questionsData.questions[currentQuestionIndex].question_id;
+                userAnswers[questionId] = selectedOption.value;
+                
+                // 同時儲存到 localStorage 做備份
+                localStorage.setItem('reading_test_answers', JSON.stringify(userAnswers));
+            }
+        }
+
+        function submitQuiz() {
+            saveCurrentAnswer();
+            
+            // 檢查是否所有題目都已回答
+            const unansweredQuestions = [];
+            questionsData.questions.forEach((question, index) => {
+                if (!userAnswers[question.question_id]) {
+                    unansweredQuestions.push(index + 1);
+                }
+            });
+            
+            if (unansweredQuestions.length > 0) {
+                const confirmSubmit = confirm(
+                    `還有 ${unansweredQuestions.length} 題未作答（題號：${unansweredQuestions.join(', ')}）\n確定要提交測驗嗎？`
+                );
+                if (!confirmSubmit) {
+                    return;
+                }
+            }
+            
+            // 發送答案到後端
+            fetch('/api/submit-reading-test/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    answers: userAnswers,
+                    test_type: 'reading',
+                    total_questions: questionsData.questions.length
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('測驗已成功提交！');
+                    // 清除 localStorage
+                    localStorage.removeItem('reading_test_answers');
+                    // 導向結果頁面或回到測驗選擇頁面
+                    window.location.href = '/test-results/' + data.result_id + '/';
+                } else {
+                    alert('提交失敗：' + (data.error || '未知錯誤'));
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting quiz:', error);
+                alert('提交時發生錯誤，請稍後再試');
+            });
+        }
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function showError(message) {
+            const container = document.getElementById('question-container');
+            container.innerHTML = `
+                <div class="error-message">
+                    <h4><i class="fas fa-exclamation-triangle"></i> 錯誤</h4>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // 取得 CSRF token 的輔助函數
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // 頁面離開前的警告
+        window.addEventListener('beforeunload', function(e) {
+            if (Object.keys(userAnswers).length > 0) {
+                e.preventDefault();
+                e.returnValue = '您的測驗進度尚未儲存，確定要離開嗎？';
+            }
+        });
+
+        // 從 localStorage 恢復答案已被移除，確保每次進入都是全新開始
+        
+        {% endif %}
     </script>
-</body>
-<footer class="footer">
-    <div class="footer-container">
-        <!-- 聯絡我們區塊 -->
-        <div class="contact-us">
-            <h3>聯絡我們</h3>
-            <ul>
-                <li><i class="fas fa-phone"></i><a href="tel:02 3322 2777"> 電話：02 3322 2777</a></li>
-                <li><i class="fas fa-map"></i><a href="https://maps.app.goo.gl/3NMVwufcbbTrfQNz6" target="_blank"> 地址：100台北市中正區濟南路一段321號</a></li>
-                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14459.01851827243!2d121.5254698!3d25.0423998!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a970a11a84ad%3A0x58e05f2528812097!2z5ZyL56uL6Ie65YyX5ZWG5qWt5aSn5a24!5e0!3m2!1szh-TW!2stw!4v1728891709611!5m2!1szh-TW!2stw" 
-                width="300"
-                height="250"
-                style="border:0;"
-                allowfullscreen=""
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
-            </ul>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- 聯絡我們區塊 -->
+            <div class="contact-us">
+                <h3>聯絡我們</h3>
+                <ul>
+                    <li><i class="fas fa-phone"></i><a href="tel:02 3322 2777"> 電話：02 3322 2777</a></li>
+                    <li><i class="fas fa-map"></i><a href="https://maps.app.goo.gl/3NMVwufcbbTrfQNz6" target="_blank"> 地址：100台北市中正區濟南路一段321號</a></li>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14459.01851827243!2d121.5254698!3d25.0423998!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a970a11a84ad%3A0x58e05f2528812097!2z5ZyL56uL6Ie65YyX5ZWG5qWt5aSn5a24!5e0!3m2!1szh-TW!2stw!4v1728891709611!5m2!1szh-TW!2stw"
+                    width="300"
+                    height="250"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </ul>
+            </div>
         </div>
-    </div>
-    <div class="footer-bottom">
-        <p>&copy; 2024 TOEIC學習平台 版權所有</p>
-    </div>
-</footer>
+        <div class="footer-bottom">
+            <p>&copy; 2024 TOEIC學習平台 版權所有</p>
+        </div>
+    </footer>
+</body>
 </html>

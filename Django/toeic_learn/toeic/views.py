@@ -103,10 +103,33 @@ def ai_reading_test(request):
     return render(request, 'ai_reading_test.html')
 
 def reading_test(request):
-    """
-    閱讀測驗頁面視圖。
-    """
-    return render(request, 'reading_test.html')
+    try:
+        # 修正變數名稱衝突
+        api_response = requests.get('http://n8n.ntub.local/webhook/tests/reading/question')
+        
+        # 檢查 API response status
+        if api_response.status_code == 200:
+            questions_data = api_response.json()
+            print(f"API Response: {questions_data}")
+            
+            # 將資料傳遞給 template
+            context = {
+                'questions_data': questions_data
+            }
+            return render(request, 'reading_test.html', context)
+        else:
+            return JsonResponse({
+                'error': f'API request failed with status: {api_response.status_code}'
+            }, status=500)
+            
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({
+            'error': f'Failed to fetch questions: {str(e)}'
+        }, status=500)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'An unexpected error occurred: {str(e)}'
+        }, status=500)
 
 def listening_test(request):
     """
@@ -150,7 +173,6 @@ def vocab_test(request):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         return JsonResponse({'error': f'An unexpected error occurred: {e}'}, status=500)
-
 
 def record(request):
     """
