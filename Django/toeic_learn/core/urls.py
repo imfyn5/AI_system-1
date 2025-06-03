@@ -31,6 +31,11 @@ urlpatterns = [
     path('vocab_test', views.vocab_test, name='vocab_test'),
     path("logout/", LogoutView.as_view(next_page="login"), name="logout"),
     path('record/', views.record, name='record'),
+    path('generate-reading/', views.generate_reading_view, name='generate_reading'),
+    path('generated-reading-test/', views.generated_reading_test_view, name='generated_reading_test'),
+    path('api/generate-reading-passage/', views.generate_reading_passage_api, name='generate_reading_passage_api'),
+    path('api/submit_test_answer', views.submit_test_answer, name='submit_test_answer'),
+    path('result/', views.test_result, name='test_result'),
 ]
 
 

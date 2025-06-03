@@ -413,9 +413,9 @@
             }
         }
 
-        function submitQuiz() {
+       function submitQuiz() {
             saveCurrentAnswer();
-            
+        
             // 檢查是否所有題目都已回答
             const unansweredQuestions = [];
             questionsData.questions.forEach((question, index) => {
@@ -423,7 +423,7 @@
                     unansweredQuestions.push(index + 1);
                 }
             });
-            
+        
             if (unansweredQuestions.length > 0) {
                 const confirmSubmit = confirm(
                     `還有 ${unansweredQuestions.length} 題未作答（題號：${unansweredQuestions.join(', ')}）\n確定要提交測驗嗎？`
@@ -432,9 +432,16 @@
                     return;
                 }
             }
-            
+        
+            // 顯示載入提示
+            const submitButton = document.querySelector('#submit-btn');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = '正在提交...';
+            }
+        
             // 發送答案到後端
-            fetch('/api/submit-vocab-exam/', {
+            fetch('api/submit_test_answer', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -449,18 +456,32 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('測驗已成功提交！');
-                    // 清除 localStorage
-                    localStorage.removeItem('vocab_exam_answers');
-                    // 導向結果頁面或回到測驗選擇頁面
-                    window.location.href = '/test-results/' + data.result_id + '/';
+                    // 將結果資料儲存到 sessionStorage，供結果頁面使用
+                    sessionStorage.setItem('test_result_data', JSON.stringify(data.data));
+                    
+                    // 清除測驗相關的 localStorage
+                    localStorage.removeItem('reading_test_answers');
+                    localStorage.removeItem('current_question_index');
+                    
+                    // 跳轉到結果頁面
+                    window.location.href = '/result/';
                 } else {
                     alert('提交失敗：' + (data.error || '未知錯誤'));
+                    // 恢復提交按鈕狀態
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent = '提交測驗';
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error submitting quiz:', error);
                 alert('提交時發生錯誤，請稍後再試');
+                // 恢復提交按鈕狀態
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = '提交測驗';
+                }
             });
         }
 

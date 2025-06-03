@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TOEIC學習平台 - 測驗平台-閱讀測驗</title>
+    <title>TOEIC學習平台 - 生成的閱讀測驗</title>
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <link rel="stylesheet" href="{% static 'css/reading_test.css' %}">
     <script src="{% static 'script/all.js' %}"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        /* 新增樣式 */
+        /* 繼承原有樣式 */
         .navigation-buttons {
             text-align: center;
             margin: 20px 0;
@@ -74,6 +74,7 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             cursor: pointer;
+            padding: 12px;
         }
         
         .quiz-options li:hover {
@@ -156,6 +157,21 @@
             border-bottom: 2px solid #007bff;
             padding-bottom: 8px;
         }
+
+        .ai-generated-badge {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .ai-generated-badge i {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -163,48 +179,53 @@
         <button class="menu-btn" id="menu-btn">☰</button>
         <h1>TOEIC學習平台</h1>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <span class="reading-title">閱讀測驗</span>
+        <span class="reading-title">生成的閱讀測驗</span>
     </div>
     
     <div class="container">
-        {% if error %}
-            <div class="error-message">
-                <h4><i class="fas fa-exclamation-triangle"></i> 錯誤</h4>
-                <p>{{ error }}</p>
-                <button onclick="location.reload()" class="nav-btn">重新載入</button>
+        <!-- 載入中區塊 -->
+        <div id="loading-section">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>載入生成的測驗中...</p>
             </div>
-        {% elif questions_data %}
+        </div>
+
+        <!-- 測驗內容區塊 -->
+        <div id="test-section" class="hidden">
+            <div class="ai-generated-badge">
+                <i class="fas fa-robot"></i> AI 生成內容
+            </div>
+            
             <h1>Reading Passage</h1>
             <p>發佈日期: <span id="currentDate"></span></p>
             
             <!-- Passage 資訊 -->
             <div class="passage-info">
                 <div class="category-box">
-                    類別: <span>{{ questions_data.passage.topic }}</span>
+                    類別: <span id="passage-topic"></span>
                 </div>
                 <div class="passage-meta">
-                    <div class="meta-item">字數: {{ questions_data.passage.word_count }}</div>
-                    <div class="meta-item">閱讀級別: {{ questions_data.passage.reading_level }}</div>
-                    {% if questions_data.passage.source %}
-                    <div class="meta-item">來源: {{ questions_data.passage.source }}</div>
-                    {% endif %}
+                    <div class="meta-item">字數: <span id="passage-word-count"></span></div>
+                    <div class="meta-item">閱讀級別: <span id="passage-reading-level"></span></div>
+                    <div class="meta-item">來源: AI Generated</div>
                 </div>
             </div>
             
             <!-- 固定的 Passage 內容 -->
             <div class="passage-box">
-                <h3 id="passage-title">{{ questions_data.passage.title }}</h3>
-                <p id="passage">{{ questions_data.passage.content }}</p>
+                <h3 id="passage-title">Loading...</h3>
+                <p id="passage-content">Loading content...</p>
             </div>
             
             <!-- 題目計數器和難度標籤 -->
-             <div>
-                 <div id="question-counter">
+            <div>
+                <div id="question-counter">
                     <div class="difficulty-badge" id="difficulty-badge">Loading...</div>
                     <div class="counter-text">
-                        題目 <span id="current-question">1</span> / <span id="total-questions">{{ questions_data.questions|length }}</span>
+                        題目 <span id="current-question">1</span> / <span id="total-questions">0</span>
                     </div>
-                    <div></div> <!-- 空的 div 用於平衡 flex layout -->
+                    <div></div>
                 </div>
                 
                 <!-- 動態載入的題目區域 -->
@@ -216,8 +237,7 @@
                         </ul>
                     </div>
                 </div>
-             </div>
-           
+            </div>
             
             <!-- 導航按鈕 -->
             <div class="navigation-buttons">
@@ -227,97 +247,103 @@
                 <button id="next-btn" class="nav-btn" onclick="nextQuestion()">
                     下一題 <i class="fas fa-chevron-right"></i>
                 </button>
+                <button id="regenerate-btn" class="nav-btn" onclick="goBackToGenerate()" style="margin-left: 20px;">
+                    <i class="fas fa-redo"></i> 重新生成
+                </button>
             </div>
-            
-        {% else %}
-            <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>載入題目中...</p>
+        </div>
+
+        <!-- 錯誤訊息區塊 -->
+        <div id="error-section" class="hidden">
+            <div class="error-message">
+                <h4><i class="fas fa-exclamation-triangle"></i> 載入失敗</h4>
+                <p id="error-message">找不到生成的測驗資料</p>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button onclick="goBackToGenerate()" class="nav-btn">
+                        <i class="fas fa-arrow-left"></i> 返回生成頁面
+                    </button>
+                </div>
             </div>
-        {% endif %}
+        </div>
     </div>
     
-    <a href="{% url 'test' %}" id="backButton">回到上一頁</a>
+    <a href="{% url 'generate_reading' %}" id="backButton">回到生成頁面</a>
    
     <script>
         // 設定當前日期
         document.getElementById("currentDate").textContent = new Date().toISOString().split('T')[0];
         
-        {% if questions_data %}
-        // 將 Django 資料傳遞給 JavaScript
-        const questionsData = {{ questions_data|safe }};
+        // Global variables
+        let questionsData = null;
         let currentQuestionIndex = 0;
-        let userAnswers = {}; // 儲存使用者答案
+        let userAnswers = {};
 
-        // 清空所有填答資料的函數
-        function clearAllAnswers() {
-            // 清空記憶體中的答案
-            userAnswers = {};
-            
-            // 清空 localStorage
-            localStorage.removeItem('reading_test_answers');
-            
-            // 清空頁面上所有選中的選項
-            const allRadios = document.querySelectorAll('input[name="answer"]');
-            allRadios.forEach(radio => {
-                radio.checked = false;
-            });
-            
-            // 移除所有選項的視覺選中狀態
-            const allOptions = document.querySelectorAll('.quiz-options li');
-            allOptions.forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            console.log('All answers cleared');
-        }
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGeneratedData();
+        });
 
-        // 清空當前題目的答案
-        function clearCurrentAnswer() {
-            const currentQuestion = questionsData.questions[currentQuestionIndex];
-            if (currentQuestion) {
-                // 從記憶體中移除當前題目的答案
-                delete userAnswers[currentQuestion.question_id];
+        function loadGeneratedData() {
+            try {
+                // 從 localStorage 讀取生成的資料
+                const savedData = localStorage.getItem('generated_reading_data');
+                const timestamp = localStorage.getItem('generation_timestamp');
                 
-                // 更新 localStorage
-                localStorage.setItem('reading_test_answers', JSON.stringify(userAnswers));
+                if (!savedData) {
+                    showError('找不到生成的測驗資料，請重新生成');
+                    return;
+                }
                 
-                // 清空當前頁面的選中狀態
-                const currentRadios = document.querySelectorAll('input[name="answer"]');
-                currentRadios.forEach(radio => {
-                    radio.checked = false;
-                });
+                // 檢查資料是否過期（例如：30分鐘）
+                if (timestamp) {
+                    const dataAge = Date.now() - parseInt(timestamp);
+                    const maxAge = 30 * 60 * 1000; // 30分鐘
+                    
+                    if (dataAge > maxAge) {
+                        showError('測驗資料已過期，請重新生成');
+                        // 清除過期資料
+                        localStorage.removeItem('generated_reading_data');
+                        localStorage.removeItem('generation_timestamp');
+                        return;
+                    }
+                }
                 
-                const currentOptions = document.querySelectorAll('.quiz-options li');
-                currentOptions.forEach(option => {
-                    option.classList.remove('selected');
-                });
+                questionsData = JSON.parse(savedData);
                 
-                console.log(`Answer for question ${currentQuestion.question_id} cleared`);
+                if (!questionsData || !questionsData.passage || !questionsData.questions) {
+                    showError('測驗資料格式錯誤，請重新生成');
+                    return;
+                }
+                
+                displayTestContent();
+                showSection('test-section');
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('載入測驗資料時發生錯誤');
             }
         }
 
-        // 重置整個測驗的函數
-        function resetQuiz() {
-            clearAllAnswers();
-            currentQuestionIndex = 0;
-            displayCurrentQuestion();
-            updateCounter();
-            console.log('Quiz reset to beginning');
-        }
-
-        // 頁面載入完成後初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 先清空所有之前的答案資料
-            clearAllAnswers();
+        function displayTestContent() {
+            // 填入 passage 資訊
+            document.getElementById('passage-topic').textContent = questionsData.passage.topic;
+            document.getElementById('passage-word-count').textContent = questionsData.passage.word_count;
+            document.getElementById('passage-reading-level').textContent = questionsData.passage.reading_level;
+            document.getElementById('passage-title').textContent = questionsData.passage.title;
+            document.getElementById('passage-content').textContent = questionsData.passage.content;
             
-            if (questionsData && questionsData.questions && questionsData.questions.length > 0) {
+            // 重置答案和題目索引
+            userAnswers = {};
+            currentQuestionIndex = 0;
+            
+            // 顯示題目
+            if (questionsData.questions && questionsData.questions.length > 0) {
                 displayCurrentQuestion();
                 updateCounter();
             } else {
-                showError('沒有可用的題目資料');
+                showError('沒有找到題目資料');
             }
-        });
+        }
 
         function displayCurrentQuestion() {
             if (!questionsData.questions || questionsData.questions.length === 0) {
@@ -434,9 +460,6 @@
             if (selectedOption && questionsData.questions[currentQuestionIndex]) {
                 const questionId = questionsData.questions[currentQuestionIndex].question_id;
                 userAnswers[questionId] = selectedOption.value;
-                
-                // 同時儲存到 localStorage 做備份
-                localStorage.setItem('reading_test_answers', JSON.stringify(userAnswers));
             }
         }
 
@@ -468,7 +491,7 @@
             }
         
             // 發送答案到後端
-            fetch('api/submit_test_answer', {
+            fetch('http://ai-toeic.ntub.local:8000/api/submit_test_answer', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -476,7 +499,7 @@
                 },
                 body: JSON.stringify({
                     answers: userAnswers,
-                    test_type: 'reading',
+                    test_type: 'ai_reading',
                     total_questions: questionsData.questions.length
                 })
             })
@@ -519,14 +542,28 @@
             });
         }
 
+        function showSection(sectionId) {
+            // 隱藏所有區塊
+            const sections = ['loading-section', 'test-section', 'error-section'];
+            sections.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            
+            // 顯示指定區塊
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
         function showError(message) {
-            const container = document.getElementById('question-container');
-            container.innerHTML = `
-                <div class="error-message">
-                    <h4><i class="fas fa-exclamation-triangle"></i> 錯誤</h4>
-                    <p>${message}</p>
-                </div>
-            `;
+            document.getElementById('error-message').textContent = message;
+            showSection('error-section');
+        }
+
+        function goBackToGenerate() {
+            // 清除當前資料
+            localStorage.removeItem('generated_reading_data');
+            localStorage.removeItem('generation_timestamp');
+            // 返回生成頁面
+            window.location.href = '/generate-reading/';
         }
 
         // 取得 CSRF token 的輔助函數
@@ -553,9 +590,13 @@
             }
         });
 
-        // 從 localStorage 恢復答案已被移除，確保每次進入都是全新開始
-        
-        {% endif %}
+        // 隱藏載入畫面的輔助類
+        const hiddenClass = 'hidden';
+        document.addEventListener('DOMContentLoaded', function() {
+            const style = document.createElement('style');
+            style.textContent = `.${hiddenClass} { display: none !important; }`;
+            document.head.appendChild(style);
+        });
     </script>
 
     <footer class="footer">

@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-ga393qkdi@vh#*6aqr=5@*wsm!sf5!0-)nhjspu4w8p#6ut1+t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ai-toeic.ntub.local']
 AUTH_USER_MODEL = 'toeic.User'
 
 
