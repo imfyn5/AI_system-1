@@ -1,0 +1,186 @@
+{
+  "name": "/api/test/vocab",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "tests/reading/question",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a5c45860-1dc6-48f2-ade2-2ca80dd9823f",
+      "name": "Webhook",
+      "webhookId": "99ede4d7-0ebb-46c5-b410-4e3b6c92b300"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"passage\": {\n    \"title\": \"{{ $('Get Reading Passage').item.json.title }}\",\n    \"content\": \"{{ $('Get Reading Passage').item.json.content }}\",\n    \"word_count\": {{ $('Get Reading Passage').item.json.word_count }},\n    \"reading_level\": \"{{ $('Get Reading Passage').item.json.reading_level }}\",\n    \"topic\": \"{{ $('Get Reading Passage').item.json.topic }}\",\n    \"source\": \"{{ $('Get Reading Passage').item.json.source }}\",\n    \"update_at\": \"{{ $('Get Reading Passage').item.json.updated_at }}\"\n  },\n  \"questions\": {{ JSON.stringify($json.data) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        1080,
+        0
+      ],
+      "id": "0e588e79-bc38-48c0-a577-c3ef2067639a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT passage_id \n  FROM Question\n  WHERE question_type = \"reading\"\n  ORDER BY RAND() LIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        220,
+        0
+      ],
+      "id": "118be426-1a00-4a9c-850c-aac0089ef445",
+      "name": "Get Passage ID",
+      "credentials": {
+        "mySql": {
+          "id": "EGpdiWIR6jmv7zfI",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  title,\n  content,\n  word_count,\n  reading_level,\n  topic,\n  source,\n  updated_at\nFROM Reading_Passage\nWHERE passage_id = $1",
+        "options": {
+          "queryReplacement": "={{ $json.passage_id }},"
+        }
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        440,
+        0
+      ],
+      "id": "b6b43ef3-ada0-4dd2-8880-2604948351db",
+      "name": "Get Reading Passage",
+      "credentials": {
+        "mySql": {
+          "id": "EGpdiWIR6jmv7zfI",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  question_id,\n  question_text,\n  option_a_text,\n  option_b_text,\n  option_c_text,\n  option_d_text,\n  difficulty_level\nFROM Question\nWHERE passage_id = $1\nORDER BY RAND()",
+        "options": {
+          "queryReplacement": "={{ $('Get Passage ID').item.json.passage_id }},"
+        }
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        660,
+        0
+      ],
+      "id": "ad43ad29-5d36-42e2-8404-f1994621d2ab",
+      "name": "MySQL",
+      "credentials": {
+        "mySql": {
+          "id": "EGpdiWIR6jmv7zfI",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ],
+      "id": "df6addf9-43fc-48d2-86a0-477ad9991618",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Passage ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Passage ID": {
+      "main": [
+        [
+          {
+            "node": "Get Reading Passage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Reading Passage": {
+      "main": [
+        [
+          {
+            "node": "MySQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a41f4528-5162-4b65-a771-023a5cdfce4d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "687947f28153013028ce7220a321f04a858e844b5e778da90f88e260aecff7d9"
+  },
+  "id": "H48P5o03XtXcd0yc",
+  "tags": []
+}

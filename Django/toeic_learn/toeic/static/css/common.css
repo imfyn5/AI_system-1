@@ -28,7 +28,7 @@ p{
     padding: 10px 20px;
     background: linear-gradient(#86c0e6 30%,#bdd9ec 70%);
     color: #58585b;
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
