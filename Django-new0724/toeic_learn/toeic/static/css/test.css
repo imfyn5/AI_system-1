@@ -1,0 +1,57 @@
+.container {
+    display: flex;
+    flex-wrap: wrap; /* 允許項目換行 */
+    justify-content: center; /* 水平居中對齊項目，如果不足三格也能居中 */
+    gap: 20px; /* 設定區塊間的間距 (行與列之間都有20px間距) */
+    padding: 20px; /* 增加一些內邊距，避免內容太靠近邊緣 */
+    max-width: 1000px; /* 限制容器最大寬度，避免在超寬螢幕上拉伸過大 */
+    margin: 50px auto; /* 讓整個容器在頁面中水平居中並與其他內容有間距 */
+}
+
+.test-box {
+    /* 計算每個 test-box 的寬度，使其在有 20px 的 gap 時能排成三列 */
+    /* 總寬度100% - 左右兩邊的 gap (2 * 20px) / 3 個項目 = 大約 33.33% - 額外調整 */
+    flex: 1 1 calc(33.33% - 20px); /* 關鍵：設置彈性項目的大小 */
+    /* 1 1: flex-grow, flex-shrink - 允許增長和縮小 */
+    /* calc(33.33% - 20px): 計算基礎寬度，考慮到 gap */
+    
+    min-width: 280px; /* 防止在小螢幕上縮得太小 */
+
+    padding: 40px;
+    text-align: center;
+    background: #86c0e6;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.3s, background 0.3s, box-shadow 0.3s; /* 增加 box-shadow 過渡 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* 確保每個盒子在高度上盡量一致 (如果內容高度不同，會保持一致) */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 讓 h2 在 test-box 內部垂直居中 */
+    align-items: center; /* 讓 h2 在 test-box 內部水平居中 */
+}
+
+.test-box:hover {
+    background: #73a5d3;
+    transform: scale(1.03); /* 輕微放大效果，更柔和 */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* 懸停時陰影加深 */
+}
+
+h2 {
+    margin: 0; /* 移除 test-box 內部 h2 的預設 margin */
+    font-size: 1.8em; /* 讓標題更大一點 */
+}
+
+/* 針對較小螢幕的響應式調整 (可選) */
+@media (max-width: 900px) {
+    .test-box {
+        flex: 1 1 calc(50% - 20px); /* 在中等螢幕上變成兩列 */
+    }
+}
+
+@media (max-width: 600px) {
+    .test-box {
+        flex: 1 1 100%; /* 在小螢幕上變成單列 */
+    }
+}
