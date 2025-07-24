@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>綜合測驗 - TOEIC學習平台</title>
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/listening_test.css' %}"> {# 可以共用一些樣式，或者創建新的css #}
+</head>
+<body>
+    <div class="header">
+        <button class="menu-btn" id="menu-btn">☰</button>
+        <h1>TOEIC學習平台</h1>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="listening-title">綜合測驗</span>
+    </div>
+
+    <div class="container">
+        <h1>綜合測驗練習</h1>
+        <p>這裡是綜合測驗的內容區域，您可以聽到一段簡短的對話並回答相關問題。</p>
+        </div>
+
+    <a href="{% url 'test' %}" id="backButton">上一頁</a>
+
+    <script src="{% static 'script/all.js' %}"></script>
+</body>
+</html>
