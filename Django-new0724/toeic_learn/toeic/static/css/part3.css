@@ -1,16 +1,9 @@
-/* ------------------------------------------- */
-/* Part 3 頁面專用 CSS (part3.css) */
-/* 此 CSS 已根據 common.css 進行調整，避免重複或衝突 */
-/* ------------------------------------------- */
+.reading-title {
+    font-size: 25px;
+    font-weight: bold;
+    color: #555;
 
-/*
-    以下是根據您提供的 common.css 內容，
-    從之前的 listening_test.css 中移除的部分，
-    因為這些樣式現在應該完全由 common.css 管理，以確保導覽列不被影響。
-    (例如: body, h1 (通用), .header 及其所有子元素, .footer 及其所有子元素等)
-*/
-
-/* 容器和主要內容區塊樣式 (與 common.css 保持一致，但如果有特定調整則保留) */
+}
 .container {
     max-width: 900px; /* 從您先前的樣式繼承 */
     margin: 80px auto 2rem auto; /* 設置頂部外邊距以避開 sticky header，並確保居中和底部間距 */

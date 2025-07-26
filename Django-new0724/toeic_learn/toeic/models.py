@@ -175,12 +175,6 @@ class Question(models.Model):
         default='vocab',
         verbose_name='分類題目類型'
     )
-    rejection_reason = models.CharField(
-        max_length=50,
-        choices=REJECTION_REASON_CHOICES,
-        null=True,
-        blank=True
-    )
 
 
 class Exam(models.Model):
