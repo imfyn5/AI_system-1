@@ -166,7 +166,7 @@ def submit_test_answer(request):
     try:
         data = json.loads(request.body)
         session_id = data.get('session_id')
-        answers = data.get('answers')  # dict: {question_id: selected_option}
+        answers = data.get('answers')
 
         if not session_id or not answers:
             return JsonResponse({'success': False, 'error': '缺少 session_id 或 answers'})
@@ -176,14 +176,17 @@ def submit_test_answer(request):
         except ExamSession.DoesNotExist:
             return JsonResponse({'success': False, 'error': '找不到考試紀錄'})
 
-        # 防止重複提交
         if session.status == 'completed':
             return JsonResponse({'success': False, 'error': '本次測驗已完成，請勿重複提交'})
 
-        correct_count = 0
-        total_questions = len(answers)
         answer_time = timezone.now()
         question_details = []
+
+        # 初始化統計
+        total_questions = 0
+        correct_total = 0
+        reading_total = reading_correct = 0
+        listen_total = listen_correct = 0
 
         for qid, selected_option in answers.items():
             try:
@@ -192,8 +195,6 @@ def submit_test_answer(request):
                 continue
 
             is_correct = (selected_option.lower() == question.is_correct.lower())
-            if is_correct:
-                correct_count += 1
 
             # 儲存每一題作答
             UserAnswer.objects.create(
@@ -204,7 +205,21 @@ def submit_test_answer(request):
                 answer_time=answer_time,
             )
 
-            # 組詳解
+            # 累加統計
+            total_questions += 1
+            if is_correct:
+                correct_total += 1
+
+            if question.question_type == 'reading':
+                reading_total += 1
+                if is_correct:
+                    reading_correct += 1
+            elif question.question_type == 'listen':
+                listen_total += 1
+                if is_correct:
+                    listen_correct += 1
+
+            # 詳解資訊
             options = [
                 {'value': 'a', 'text': question.option_a_text},
                 {'value': 'b', 'text': question.option_b_text},
@@ -224,20 +239,25 @@ def submit_test_answer(request):
                 'options': options,
             })
 
-        # 計算分數
-        score_percentage = round(correct_count / total_questions * 100, 2)
-        is_passed = score_percentage >= float(session.exam.passing_score)
+        # 分數計算
+        def calc_score(correct, total):
+            return round((correct / total * 100), 2) if total else 0.0
+
+        reading_score = calc_score(reading_correct, reading_total)
+        listen_score = calc_score(listen_correct, listen_total)
+        total_score = calc_score(correct_total, total_questions)
+
+        is_passed = total_score >= float(session.exam.passing_score)
 
         # 儲存 ExamResult
         ExamResult.objects.create(
             session=session,
             total_questions=total_questions,
-            correct_answers=correct_count,
-            total_score=score_percentage,
+            correct_answers=correct_total,
+            total_score=total_score,
             is_passed=is_passed,
-            reading_score=score_percentage if session.exam.exam_type == 'reading' else 0,
-            vocab_score=0,
-            listen_score=score_percentage if session.exam.exam_type == 'listen' else 0,
+            reading_score=reading_score,
+            listen_score=listen_score,
             completed_at=timezone.now(),
         )
 
@@ -249,16 +269,19 @@ def submit_test_answer(request):
         return JsonResponse({
             'success': True,
             'data': {
-                'score': score_percentage,
-                'correct_answers': correct_count,
+                'score': total_score,
+                'correct_answers': correct_total,
                 'total_questions': total_questions,
                 'is_passed': is_passed,
+                'reading_score': reading_score,
+                'listen_score': listen_score,
                 'question_details': question_details,
             }
         })
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
 
 def test_result(request):
     """
