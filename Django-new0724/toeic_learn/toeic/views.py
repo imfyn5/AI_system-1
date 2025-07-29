@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from toeic.models import ReadingPassage, Question
+from toeic.models import ReadingPassage, Question,QUESTION_CATEGORY_CHOICES
 import json
 from .models import ReadingPassage, Question,UserAnswer,ExamResult
 from django.utils import timezone
@@ -71,9 +71,6 @@ def ai_reading_test(request):
 
 def listening_test(request):
     return render(request, 'listening_test.html')
-
-def record(request):
-    return render(request, 'record.html')
 
 def generated_reading_test_view(request):
     return render(request, 'generated_reading_test.html')
@@ -169,7 +166,7 @@ def submit_test_answer(request):
     try:
         data = json.loads(request.body)
         session_id = data.get('session_id')
-        answers = data.get('answers')  # dict: {question_id: selected_option}
+        answers = data.get('answers')
 
         if not session_id or not answers:
             return JsonResponse({'success': False, 'error': '缺少 session_id 或 answers'})
@@ -179,14 +176,17 @@ def submit_test_answer(request):
         except ExamSession.DoesNotExist:
             return JsonResponse({'success': False, 'error': '找不到考試紀錄'})
 
-        # 防止重複提交
         if session.status == 'completed':
             return JsonResponse({'success': False, 'error': '本次測驗已完成，請勿重複提交'})
 
-        correct_count = 0
-        total_questions = len(answers)
         answer_time = timezone.now()
         question_details = []
+
+        # 初始化統計
+        total_questions = 0
+        correct_total = 0
+        reading_total = reading_correct = 0
+        listen_total = listen_correct = 0
 
         for qid, selected_option in answers.items():
             try:
@@ -195,8 +195,6 @@ def submit_test_answer(request):
                 continue
 
             is_correct = (selected_option.lower() == question.is_correct.lower())
-            if is_correct:
-                correct_count += 1
 
             # 儲存每一題作答
             UserAnswer.objects.create(
@@ -207,7 +205,21 @@ def submit_test_answer(request):
                 answer_time=answer_time,
             )
 
-            # 組詳解
+            # 累加統計
+            total_questions += 1
+            if is_correct:
+                correct_total += 1
+
+            if question.question_type == 'reading':
+                reading_total += 1
+                if is_correct:
+                    reading_correct += 1
+            elif question.question_type == 'listen':
+                listen_total += 1
+                if is_correct:
+                    listen_correct += 1
+
+            # 詳解資訊
             options = [
                 {'value': 'a', 'text': question.option_a_text},
                 {'value': 'b', 'text': question.option_b_text},
@@ -227,20 +239,25 @@ def submit_test_answer(request):
                 'options': options,
             })
 
-        # 計算分數
-        score_percentage = round(correct_count / total_questions * 100, 2)
-        is_passed = score_percentage >= float(session.exam.passing_score)
+        # 分數計算
+        def calc_score(correct, total):
+            return round((correct / total * 100), 2) if total else 0.0
+
+        reading_score = calc_score(reading_correct, reading_total)
+        listen_score = calc_score(listen_correct, listen_total)
+        total_score = calc_score(correct_total, total_questions)
+
+        is_passed = total_score >= float(session.exam.passing_score)
 
         # 儲存 ExamResult
         ExamResult.objects.create(
             session=session,
             total_questions=total_questions,
-            correct_answers=correct_count,
-            total_score=score_percentage,
+            correct_answers=correct_total,
+            total_score=total_score,
             is_passed=is_passed,
-            reading_score=score_percentage if session.exam.exam_type == 'reading' else 0,
-            vocab_score=0,
-            listen_score=score_percentage if session.exam.exam_type == 'listen' else 0,
+            reading_score=reading_score,
+            listen_score=listen_score,
             completed_at=timezone.now(),
         )
 
@@ -252,16 +269,19 @@ def submit_test_answer(request):
         return JsonResponse({
             'success': True,
             'data': {
-                'score': score_percentage,
-                'correct_answers': correct_count,
+                'score': total_score,
+                'correct_answers': correct_total,
                 'total_questions': total_questions,
                 'is_passed': is_passed,
+                'reading_score': reading_score,
+                'listen_score': listen_score,
                 'question_details': question_details,
             }
         })
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
 
 def test_result(request):
     """
@@ -556,7 +576,7 @@ def update_exam_status(request):
 def record(request):
     user = request.user
 
-    # 歷史測驗紀錄
+    # 歷史測驗紀錄 (保持不變)
     exam_results = (
         ExamResult.objects
         .filter(session__user=user)
@@ -564,12 +584,15 @@ def record(request):
         .select_related('session__exam')
     )
 
-    # 閱讀/聽力進度
+    # 閱讀作答情況
     reading_total = UserAnswer.objects.filter(session__user=user, question__question_type='reading').count()
     reading_correct = UserAnswer.objects.filter(session__user=user, question__question_type='reading', is_correct=True).count()
+    
+    # 聽力作答情況
     listening_total = UserAnswer.objects.filter(session__user=user, question__question_type='listen').count()
     listening_correct = UserAnswer.objects.filter(session__user=user, question__question_type='listen', is_correct=True).count()
 
+    # 計算百分比
     reading_progress = int((reading_correct / reading_total) * 100) if reading_total else 0
     listening_progress = int((listening_correct / listening_total) * 100) if listening_total else 0
 
@@ -577,11 +600,56 @@ def record(request):
     total_answers = UserAnswer.objects.filter(session__user=user).count()
     study_hours = round(total_answers / 60, 1)  # 1題1分鐘，60題=1小時
 
+    # --- 新增：按題目類別分析作答情況 ---
+    category_performance = {}
+    # 獲取 Question 模型中定義的題目類別選項，用於顯示名稱
+    category_choices_dict = dict(QUESTION_CATEGORY_CHOICES)
+
+    # 遍歷所有題目類別
+    for category_key, category_display_name in QUESTION_CATEGORY_CHOICES:
+        # 篩選出屬於當前類別的使用者作答
+        # 注意：這裡的篩選是針對所有 question_type 的，因為 category 是 question 的屬性
+        category_answers = UserAnswer.objects.filter(
+            session__user=user,
+            question__question_category=category_key
+        )
+        
+        total_in_category = category_answers.count()
+        correct_in_category = category_answers.filter(is_correct=True).count()
+        
+        percentage_in_category = int((correct_in_category / total_in_category) * 100) if total_in_category else 0
+        
+        category_performance[category_key] = {
+            'display_name': category_display_name,
+            'total': total_in_category,
+            'correct': correct_in_category,
+            'percentage': percentage_in_category,
+        }
+    # --- 新增結束 ---
+
     context = {
         'user': user,
         'exam_results': exam_results,
         'reading_progress': reading_progress,
         'listening_progress': listening_progress,
         'study_hours': study_hours,
+        'reading_total': reading_total,
+        'reading_correct': reading_correct,
+        'listening_total': listening_total,
+        'listening_correct': listening_correct,
+        'category_performance': category_performance, 
+        'learning_suggestions': get_learning_suggestions(category_performance),
+        
     }
     return render(request, 'record.html', context)
+
+def get_learning_suggestions(category_performance):
+    suggestions = []
+    for key, data in category_performance.items():
+        if data['percentage'] < 60:  # 錯太多了！
+            suggestions.append(f"你在「{data['display_name']}」類別正確率較低，建議多加強相關文法或單字練習。")
+        elif data['percentage'] < 80:
+            suggestions.append(f"你在「{data['display_name']}」類別有待提升，可複習該類題型的解題技巧。")
+    if not suggestions:
+        suggestions.append("太棒了！你目前表現穩定，請持續保持並多挑戰進階題目。")
+    return suggestions
