@@ -20,7 +20,6 @@ QUESTION_TYPE_CHOICES = [
 
 EXAM_TYPE_CHOICES = [
     ('reading', 'Reading'),
-    # ('vocab', 'Vocabulary'),
     ('listen', 'Listening'),
     ('mixed', 'Mixed'),
 ]
@@ -62,13 +61,6 @@ REJECTION_REASON_CHOICES = [
     ('content_error', '內文有誤'),
     ('question_error', '題目有誤'),
 ]
-
-rejection_reason = models.CharField(
-    max_length=50,
-    choices=REJECTION_REASON_CHOICES,
-    null=True,
-    blank=True
-)
 
 
 # ---------- Custom User Manager ----------
@@ -175,12 +167,6 @@ class Question(models.Model):
         default='vocab',
         verbose_name='分類題目類型'
     )
-    rejection_reason = models.CharField(
-        max_length=50,
-        choices=REJECTION_REASON_CHOICES,
-        null=True,
-        blank=True
-    )
 
 
 class Exam(models.Model):
@@ -230,7 +216,6 @@ class ExamResult(models.Model):
     total_score = models.DecimalField(max_digits=5, decimal_places=2)
     is_passed = models.BooleanField()
     reading_score = models.DecimalField(max_digits=5, decimal_places=2)
-    vocab_score = models.DecimalField(max_digits=5, decimal_places=2)
     listen_score = models.DecimalField(max_digits=5, decimal_places=2)
     completed_at = models.DateTimeField()
 

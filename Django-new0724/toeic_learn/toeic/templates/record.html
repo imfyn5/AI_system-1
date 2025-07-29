@@ -13,6 +13,77 @@
         body { overflow-x: hidden; }
         img { max-width: 100%; height: auto; }
         iframe { max-width: 100%; width: 100%; }
+
+        /* 統一表格樣式 */
+        .table-standard {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .table-standard th,
+        .table-standard td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .table-standard th {
+            background-color: #007BFF;
+            color: white;
+            font-weight: bold;
+        }
+        .table-standard tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .table-standard tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* 額外容器樣式 */
+        .category-analysis-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .category-analysis-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .test-history {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .personalized-advice-section {
+            background-color: #fff8e1;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .personalized-advice-section h3 {
+            color: #e65100;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ffe0b2;
+            padding-bottom: 10px;
+        }
+        .personalized-advice-section ul {
+            padding-left: 20px;
+        }
+        .personalized-advice-section li {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .personalized-advice-section i {
+            color: #fbc02d;
+            margin-right: 6px;
+        }
     </style>
 </head>
 <body>
@@ -22,9 +93,8 @@
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="record-title">個人學習歷程</span>
     </div>
-    <!-- 個人學習歷程內容 -->
+
     <div class="container">
-        <!-- 個人資訊 -->
         <div class="profile">
             <img src="{% static 'img/user.jpg' %}" alt="使用者頭像">
             <h2>歡迎，<span id="username">{{ user.nickname }}</span></h2>
@@ -32,22 +102,65 @@
             <p>總學習時數：<span id="study-hours">{{ study_hours }}</span> 小時</p>
         </div>
 
-        <!-- 學習進度 -->
         <div class="progress-section">
-            <h3>學習進度</h3>
-            <p>目前 TOEIC 進度：閱讀 {{ reading_progress }}%、聽力 {{ listening_progress }}%</p>
+            <h3>作答情況（正確數/總作答題數）</h3> 
+            <p>
+                閱讀：{{ reading_correct }} / {{ reading_total }} （正確率：{{ reading_progress }}%）<br>
+            </p>
             <div class="progress-bar">
                 <div class="progress" style="width: {{ reading_progress }}%;"></div>
             </div>
+            <p> 
+                聽力：{{ listening_correct }} / {{ listening_total }} （正確率：{{ listening_progress }}%）
+            </p>
             <div class="progress-bar" style="margin-top:10px;">
                 <div class="progress" style="width: {{ listening_progress }}%; background: #2196f3;"></div>
             </div>
         </div>
 
-        <!-- 已完成測驗 -->
+        <div class="category-analysis-section">
+            <h3>題目類別作答分析</h3>
+            {% if category_performance %}
+            <table class="table-standard">
+                <thead>
+                    <tr>
+                        <th>類別</th>
+                        <th>答對數</th>
+                        <th>總作答數</th>
+                        <th>正確率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, data in category_performance.items %}
+                    <tr>
+                        <td>{{ data.display_name }}</td>
+                        <td>{{ data.correct }}</td>
+                        <td>{{ data.total }}</td>
+                        <td>{{ data.percentage }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>尚無題目類別作答紀錄。</p>
+            {% endif %}
+        </div>
+
+        <div class="personalized-advice-section">
+            <h3>個性化學習建議</h3>
+            {% if learning_suggestions %}
+                <ul>
+                    {% for suggestion in learning_suggestions %}
+                        <li><i class="fas fa-lightbulb"></i> {{ suggestion }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>尚無建議，請先完成測驗以取得分析！</p>
+            {% endif %}
+</div>
         <div class="test-history">
             <h3>已完成測驗</h3>
-            <table>
+            <table class="table-standard">
                 <thead>
                     <tr>
                         <th>測驗名稱</th>
@@ -71,25 +184,22 @@
             </table>
         </div>
     </div>
+
     <a href="{% url 'home' %}" id="backButton">回到首頁</a>
+
     <script>
-        // 獲取當前頁面的網址
         const currentPage = window.location.pathname.split("/").pop();
-
-        // 選取所有導航按鈕
         const navLinks = document.querySelectorAll(".nav-buttons a");
-
         navLinks.forEach(link => {
-            // 取得按鈕的 href
             const page = link.getAttribute("href");
             if (page === currentPage) {
                 link.querySelector(".nav-btn").classList.add("current");
             }
         });
     </script>
-<footer class="footer">
+
+    <footer class="footer">
         <div class="footer-container">
-            <!-- 聯絡我們區塊 -->
             <div class="contact-us">
                 <h3>聯絡我們</h3>
                 <ul>
