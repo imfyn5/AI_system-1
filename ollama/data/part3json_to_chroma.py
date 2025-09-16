@@ -3,8 +3,8 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
 
-CHROMA_PATH = "C:/Users/Fyn/Desktop/rag/chroma_db"
-COLLECTION_NAME = "toeic_part4"
+CHROMA_PATH = "/app/chroma_db"
+COLLECTION_NAME = "toeic_part3"
 
 # 載入嵌入模型
 model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -20,8 +20,8 @@ try:
 except:
     existing_ids = set()
 
-# 載入 Part 4 JSON 題組
-with open("C:/Users/Fyn/Desktop/rag/part4.json", "r", encoding="utf-8") as f:
+# 載入 Part 3 JSON 題組
+with open("C:/Users/Fyn/Desktop/rag/data/part3.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 new_count = 0
@@ -48,7 +48,7 @@ for item in data:
         documents=[full_text],
         embeddings=[embedding],
         metadatas=[{
-            "type": "part4",
+            "type": "part3",
             "num_questions": len(questions),
             "transcript_snippet": transcript[:100]
         }]
@@ -57,4 +57,4 @@ for item in data:
     print(f"✅ 已加入：{id}")
     new_count += 1
 
-print(f"\n🎉 完成：新增 {new_count} 筆 Part 4 題組至 ChromaDB")
+print(f"\n🎉 完成：新增 {new_count} 筆 Part 3 題組至 ChromaDB")

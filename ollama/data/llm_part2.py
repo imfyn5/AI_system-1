@@ -9,8 +9,9 @@ import re
 import os
 
 # 資料儲存設定
-CHROMA_PATH = r"C:/Users/Fyn/Desktop/rag/chroma_db"
-JSONL_PATH = "C:/Users/Fyn/Desktop/rag/json/toeic_part2_db_ready.jsonl"
+CHROMA_PATH = "/app/chroma_db"
+JSONL_PATH = "/app/json/toeic_part2_db_ready.jsonl"
+OLLAMA_API_URL = "http://host.docker.internal:11434/api/generate"
 
 # 初始化
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -67,7 +68,7 @@ prompt = f"""
       "question_category": "題目種類(tense,pos,syntax,vocab)tense時態, pos詞性, syntax語法, vocab詞彙",
       "passage_id": null,
       "question_image_url": null,
-      "part"= "2",
+      "part": "2",
       "option_a_text": "transcrpit題目後的選項 A",
       "option_b_text": "transcrpit題目後的選項 B",
       "option_c_text": "transcrpit題目後的選項 C",
@@ -96,7 +97,7 @@ prompt = f"""
 
 # 🔄 發送請求至本地 LLM
 response = requests.post(
-    "http://localhost:11434/api/generate",
+    OLLAMA_API_URL,
     json={
         "model": "llama3",
         "prompt": prompt,
